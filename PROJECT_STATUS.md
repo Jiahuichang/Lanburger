@@ -25,7 +25,7 @@ Then in Claude Code, start with:
 
 > Read CLAUDE.md, PROJECT_STATUS.md and docs/ROADMAP.md, then continue Phase 1 from "Remaining Phase 1 work".
 
-Requirements: Node 20+ (developed on Node 24.11, npm 11.6).
+Requirements: Node 20.19+ or 22.12+ (required by Vite 8; developed on Node 24.11, npm 11.6).
 
 ## Completed
 
