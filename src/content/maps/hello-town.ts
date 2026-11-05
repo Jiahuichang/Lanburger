@@ -74,7 +74,7 @@ export const helloTown: MapSource = {
     },
     {
       type: 'building', id: 'language-academy', style: 'academy', name: 'Language Academy', x: 8, y: 17, w: 12, depth: 4,
-      blurb: 'Greetings & introductions. Ms. Sesame is preparing the first class.',
+      blurb: 'Greetings & introductions. Maggie is preparing the first class.',
     },
     {
       type: 'building', id: 'burger-bistro', style: 'bistro', name: 'Burger Bistro', x: 60, y: 17, w: 12, depth: 4,

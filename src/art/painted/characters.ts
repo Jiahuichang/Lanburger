@@ -71,7 +71,7 @@ export const CHARACTER_SPECS: Record<string, ChibiSpec> = {
     prop: 'tea',
   },
 
-  /** Maggie — role to be decided. Always smiling (crescent "fox" eyes), long wavy dark hair parted to the side,
+  /** Maggie — Language Academy teacher (Greetings). Always smiling (crescent "fox" eyes), long wavy dark hair parted to the side,
    *  black top and a blue skirt, bracelet. */
   maggie: {
     skin: ramps.skin,

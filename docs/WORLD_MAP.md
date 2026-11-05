@@ -49,7 +49,7 @@ World
 | ---------------------- | -------- | -------------------- | ---- | -------- |
 | **Town Square** | 日常對話（Everyday Talk）：天氣、感覺、閒聊 | 散步的鎮民（朋友 NPC 適合放這裡） | 情境對話、Vocabulary Snake 入口（之後） | 開放 |
 | **Town Hall** | 主線劇情與進度 | Mayor Bun | 接主線、回報、查看燈籠進度 | 開放 |
-| **Language Academy** | 打招呼與自我介紹（Greetings） | Ms. Sesame（老師） | 課程、Practice Corner（免費練習，補體力） | 開放 |
+| **Language Academy** | 打招呼與自我介紹（Greetings） | Maggie（老師，朋友 NPC） | 課程、Practice Corner（免費練習，補體力） | 開放 |
 | **Burger Bistro** | 食物與點餐（Food & Ordering） | Chef Patty | 點餐對話、Language Cooking | 完成 Greetings 後開放 |
 | **General Store** | 購物、價格、數量（Shopping） | Mr. Pickles（店長） | 購物對話、數字練習 | 完成 Food 後開放 |
 | **Racing Garage** | 交通與方向（Directions） | Rusty（技師） | 問路對話、Language Kart Racing | 完成 Shopping 後開放 |
@@ -67,7 +67,7 @@ Greetings（Academy）──▶ Food（Bistro）──▶ Shopping（Store）─
                     五盞燈全亮 ──▶ Travel Station 開放
 ```
 
-- 鎖住的建築門口會有英文提示牌（例如 "Closed for prep — help Ms. Sesame first!"），玩家一定知道下一步要去哪。
+- 鎖住的建築門口會有英文提示牌（例如 "Closed for prep — help Maggie first!"），玩家一定知道下一步要去哪。
 - 解鎖條件只看「完成任務」，不看分數。只要完成就能前進，沒有任何條件會讓玩家永久卡住。
 - 「探索 3 個地點」之類的任務只需要走到門口，不需要進去。
 

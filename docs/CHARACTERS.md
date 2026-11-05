@@ -10,7 +10,7 @@
 | **Jeremy** (friend) | Racing Garage mechanic (transport & directions) | Tall and slim, tan skin, center-parted black hair, light-blue open overshirt over a tee, brown work pants, spinning-top keychain |
 | **Jonas** (friend) | Travel Station master (unlocking the next village) | Very tall, short tousled blond hair, blond mustache, light long-sleeve shirt, black knee-length shorts, simple tattoos, an original yellow-duck keychain |
 | **Summy** (friend) | General Store owner (shopping, prices, quantities) | Long curly dark hair with bangs, loose dark tee, signature pink shoes, a teacup |
-| **Maggie** (friend) | To be decided | Always smiling (crescent eyes), long wavy dark hair parted to the side, black top, blue skirt, bracelet. Drawn, but not placed in town yet |
+| **Maggie** (friend) | Language Academy teacher (Greetings; leads the first lesson) | Always smiling (crescent eyes), long wavy dark hair parted to the side, black top, blue skirt, bracelet. Stands at the Academy door until the interior opens (R3) |
 | **Remy** (original) | Town Square regular (Everyday Talk): easygoing all-rounder artist | Brown hair, green hoodie, headphones around the neck, sketchbook |
 | **Theo** (original) | Town Square regular: looks serious, secretly silly stargazer | Wavy dark-brown hair, long beige coat, burgundy beret |
 | **Noah** (original) | Riverside regular: quiet swimmer who opens up to friends | Black hair, blue swim-club hoodie, towel on the shoulder; his small fluffy dog **Mochi** |

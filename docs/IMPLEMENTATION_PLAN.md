@@ -152,14 +152,14 @@ src/
    - Talk to the Town Mayor `0/1`
    - Explore 3 Locations `0/3`（走到 Academy、Bistro、Store 門口；後兩間顯示 "Closed for prep"）
    - Visit the Language Academy `0/1`
-3. 在 Academy 裡，Ms. Sesame 教 **Greetings**：情境 → 說明 → 範例 → 練習 5–6 題 → 回饋 → 重試。
+3. 在 Academy 裡，Maggie 老師教 **Greetings**：情境 → 說明 → 範例 → 練習 5–6 題 → 回饋 → 重試。
 4. **情境練習**：回到廣場，跟一位鎮民（之後可以換成朋友 NPC）用剛學的句子對話（`dialogue-reply` 題）。
 5. 回報鎮長 → **第一盞 Word Lantern 點亮**（光線變化和動畫）→ XP、升級、Lanburger 長出 **Lettuce**。
 6. Burger Bistro 解鎖（門口提示改變），下一個任務出現。切片到此結束。
 
 ### 6.2 切片包含的系統
 - 俯視角 Hello Town 戶外（完整版面，至少廣場和 4 棟建築外觀完成美術）加 Language Academy 室內。
-- Lanburger（4 方向 idle 和 walk、celebrate、incorrect、learn）、3 位 NPC（Mayor Bun、Ms. Sesame、1 位鎮民），都有頭像 6 表情。
+- Lanburger（4 方向 idle 和 walk、celebrate、incorrect、learn）、3 位 NPC（Mayor Bun、Maggie、1 位鎮民），都有頭像 6 表情。
 - 對話、學習片段、Greetings 內容包、Leitner 複習（Learn 按鈕）、體力（答錯 −1）、Practice Corner（0 體力時免費補）。
 - 任務追蹤面板、HUD（頭像、Lv、Energy、XP）、右上圖示按鈕（Quests、Bag、Learn 可用；Collection、Settings 先做基本版）、小地圖。
 - 存檔 v2：重新整理頁面會回到原位，進度保留。

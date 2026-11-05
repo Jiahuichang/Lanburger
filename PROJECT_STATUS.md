@@ -18,7 +18,7 @@ _Last updated: 2026-11-05_
   - `?gallery=1` art gallery and the `?stage=` / `?toppings=` growth preview.
 - **NPCs (2026-11-05):**
   - Friends: Jeremy (Racing Garage, center-parted hair), Jonas (Travel Station) and Summy (General Store) are in town.
-    Maggie is drawn (smiling eyes, blue skirt) but her role is still undecided; the suggestion is Language Academy teacher.
+    Maggie (smiling eyes, blue skirt) is the Language Academy teacher and leads the Greetings lesson in R4; she stands at the Academy door.
   - Original townsfolk with personality-inspired cards: Remy, Theo and Ash in Town Square, Noah with his dog Mochi by the stream.
   - Cards: `docs/CHARACTERS.md`. Pets: `src/art/painted/pets.ts` (talk to Mochi too).
 
@@ -66,7 +66,7 @@ Useful URLs:
 - NPC system: idle wandering, facing the player, balloons (`!` quest, `?` turn in, `…` small talk).
 - Dialogue system: portrait panel with six expressions, typewriter text, choices, a dialogue graph format in `src/content/`.
 - Building entry: door → Language Academy interior map → back outside (scene transition, return spawn).
-- Original NPCs: Ms. Sesame (Academy) and one townsperson. Friend NPCs wait for photos and an approved character card.
+- NPC behavior for the cast already in town (Mayor Bun, Maggie the Academy teacher, Jeremy, Jonas, Summy, Remy, Theo, Ash, Noah and Mochi): turning, balloons, real dialogue.
 - **Still missing from the user:** NPC style references and friend photos (`references/private/`, git-ignored), and
   more village references.
 

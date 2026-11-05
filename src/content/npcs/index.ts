@@ -55,6 +55,20 @@ export const NPCS: NpcDefinition[] = [
     greeting: 'Hi hi! The General Store opens soon. I am sorting the teacups. Aren\'t they so cute?',
   },
 
+  {
+    id: 'maggie',
+    name: 'Maggie',
+    mapId: 'hello-town',
+    x: 16.6,
+    y: 18.9,
+    facing: 'down',
+    sprite: 'maggie',
+    portrait: 'maggie',
+    dialogueId: 'maggie.welcome',
+    questHooks: ['greetings-lesson'],
+    greeting: "Hi hi, welcome! I'm Maggie, the teacher here! Our first class is almost ready. Oh, I'm so excited I could talk all day... and I probably will!",
+  },
+
   // Town Square regulars (Everyday Talk)
   {
     id: 'remy',
