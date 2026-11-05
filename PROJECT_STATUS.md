@@ -20,6 +20,12 @@ _Last updated: 2026-11-05_
   - Desktop keyboard and landscape touch controls.
 - **Screenshots:** `docs/screenshots/r1/`, with the art review in its README.
 
+## Play online (any phone, no install)
+
+**https://jiahuichang.github.io/Lanburger/** is rebuilt automatically on every push to `main`
+(`.github/workflows/deploy-pages.yml`, about 1–2 minutes). Add `?touch=1` or `?reset=1` as usual.
+One-time setup: repo Settings → Pages → Source: **GitHub Actions**.
+
 ## Resume on another computer
 
 ```bash
@@ -43,7 +49,7 @@ Useful URLs:
 
 ## Before calling R1 done
 
-1. On a real phone held in landscape, open the "Network" URL that Vite prints (the phone must be on the same Wi-Fi).
+1. On a real phone held in landscape, open https://jiahuichang.github.io/Lanburger/ (or the Vite "Network" URL on the same Wi-Fi).
    - The joystick walks the player, and pushing it to the rim runs.
    - Talk works near a sign or a door.
    - Text is readable.

@@ -65,6 +65,9 @@ npm run preview    # serve the production build
 npm run playtest   # OPTIONAL headless-Chrome play-test (needs permission to launch Chrome)
 ```
 
+Every push to `main` deploys the game to https://jiahuichang.github.io/Lanburger/ (GitHub Pages, `.github/workflows/deploy-pages.yml`).
+Vite's `base` comes from `BASE_PATH`; keep asset URLs relative to it (no hard-coded `/…` paths in code).
+
 Never run `npm run playtest` without the user's OK: it launches Chrome, and some of the user's computers don't allow it.
 
 Debug URL flags: `?touch=1` forces touch controls, `?reset=1` clears the save, `?debug=1` shows collision boxes and
