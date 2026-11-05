@@ -1,0 +1,806 @@
+/*
+ * Shared UI — built ONLY from token CSS variables written by src/art/cssVars.ts.
+ * No hex values in this file (ART_BIBLE §7, CLAUDE.md rule 2).
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--c-sky-light);
+  color: var(--c-ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+}
+
+#game canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --gap: 12px;
+}
+
+.ui-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ───────────── shared components */
+
+.panel {
+  background: var(--c-cream);
+  border: 3px solid var(--c-wood-deep);
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-panel), inset 0 0 0 2px var(--c-cream-deep);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 8px;
+  background: var(--cream-glass);
+  border: 2px solid var(--c-wood-deep);
+  border-radius: var(--r-pill);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 var(--ink-faint);
+}
+
+.chip svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.btn,
+.icon-btn {
+  font: inherit;
+  color: var(--c-ink);
+  cursor: pointer;
+  pointer-events: auto;
+  border: 3px solid var(--c-wood-deep);
+  background: linear-gradient(180deg, var(--c-wood-light), var(--c-wood));
+  box-shadow: var(--shadow-button);
+  transition: transform var(--ms-ui) ease-out, box-shadow var(--ms-ui) ease-out, filter var(--ms-ui);
+}
+
+.btn:active,
+.icon-btn:active,
+.btn.is-pressed,
+.icon-btn.is-pressed {
+  transform: translateY(3px) scale(0.96);
+  box-shadow: 0 1px 0 var(--c-wood-deep);
+  filter: brightness(0.94);
+}
+
+.btn:focus-visible,
+.icon-btn:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--c-sun);
+  outline-offset: 2px;
+}
+
+.btn {
+  border-radius: var(--r-pill);
+  padding: 10px 26px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.btn--primary {
+  background: linear-gradient(180deg, var(--c-sage), var(--c-sage-deep));
+  color: var(--c-cream);
+  text-shadow: 0 1px 0 var(--c-sage-dark);
+}
+
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.icon-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+.icon-btn--small {
+  width: 38px;
+  height: 38px;
+}
+
+.icon-btn--small svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* SVG icon classes (icons.ts) */
+svg path,
+svg circle,
+svg rect {
+  stroke: var(--c-ink);
+  stroke-width: 1.6;
+  fill: none;
+}
+.i-fill-sage { fill: var(--c-sage) !important; }
+.i-fill-wood { fill: var(--c-wood) !important; }
+.i-fill-wood-light { fill: var(--c-wood-light) !important; }
+.i-fill-cream { fill: var(--c-cream) !important; }
+.i-fill-energy { fill: var(--c-energy) !important; }
+.i-thick { stroke-width: 2.6 !important; }
+
+.key-chip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 7px;
+  background: var(--c-cream-deep);
+  border: 2px solid var(--c-wood-deep);
+  box-shadow: 0 2px 0 var(--c-wood-deep);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ───────────── HUD */
+
+.hud {
+  position: absolute;
+  inset: 0;
+}
+
+.hud-badge {
+  position: absolute;
+  top: calc(var(--safe-t) + var(--gap));
+  left: calc(var(--safe-l) + var(--gap));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 8px;
+  pointer-events: auto;
+}
+
+.hud-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--c-cream), var(--c-cream-deep));
+  border: 3px solid var(--c-wood-deep);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.hud-avatar svg {
+  width: 30px;
+  height: 30px;
+}
+
+.hud-info {
+  display: grid;
+  gap: 5px;
+  min-width: 170px;
+}
+
+.hud-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hud-name {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.hud-level {
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--c-sun);
+  border: 2px solid var(--c-wood-deep);
+  border-radius: var(--r-pill);
+  padding: 1px 9px;
+}
+
+.meter {
+  position: relative;
+  height: 20px;
+  border-radius: var(--r-pill);
+  background: var(--c-cream-deep);
+  border: 2px solid var(--c-wood-deep);
+  overflow: hidden;
+}
+
+.meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  border-radius: var(--r-pill);
+  transition: width 400ms ease-out;
+}
+
+.meter--xp .meter-fill {
+  background: linear-gradient(180deg, var(--c-cream), var(--c-sun) 45%);
+}
+
+.meter--energy .meter-fill {
+  background: linear-gradient(180deg, var(--c-sky-light), var(--c-energy) 45%);
+}
+
+.meter-text {
+  position: relative;
+  display: block;
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.meter-icon {
+  position: absolute;
+  left: 2px;
+  top: -1px;
+  z-index: 1;
+}
+
+.meter-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.hud-right {
+  position: absolute;
+  top: calc(var(--safe-t) + var(--gap));
+  right: calc(var(--safe-r) + var(--gap));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-footer {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--safe-b) + var(--gap));
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  max-width: 60vw;
+}
+
+.hud-hint {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 500ms ease-out, transform 500ms ease-out;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.hud-hint.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+.hud-placeholder {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 3px 12px;
+  border-radius: var(--r-pill);
+  border: 2px dashed var(--c-wood-deep);
+  background: var(--cream-glass);
+  white-space: nowrap;
+}
+
+/* ───────────── world prompt & speech bubble */
+
+.world-prompt,
+.speech-bubble {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ms-ui) ease-out;
+  will-change: transform;
+}
+
+.world-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 6px;
+  background: var(--c-cream);
+  border: 3px solid var(--c-wood-deep);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-panel);
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.world-prompt::after,
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  width: 16px;
+  height: 16px;
+  background: var(--c-cream);
+  border-right: 3px solid var(--c-wood-deep);
+  border-bottom: 3px solid var(--c-wood-deep);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.world-prompt.is-shown,
+.speech-bubble.is-shown {
+  opacity: 1;
+}
+
+.world-prompt.is-shown {
+  animation: prompt-bob 1.6s ease-in-out infinite;
+}
+
+@keyframes prompt-bob {
+  50% {
+    margin-top: -4px;
+  }
+}
+
+.is-touch .world-prompt .key-chip {
+  display: none;
+}
+
+.is-touch .world-prompt {
+  padding-left: 14px;
+}
+
+.speech-bubble {
+  width: min(380px, 62vw);
+  padding: 12px 18px 14px;
+}
+
+.speech-bubble::after {
+  left: calc(50% + var(--tail-offset, 0px));
+}
+
+.speech-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-wood-deep);
+  margin-bottom: 4px;
+}
+
+.speech-body {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+/* ───────────── touch controls (GAME_DESIGN §4) */
+
+.touch-controls {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+.touch-controls.is-visible {
+  display: block;
+}
+
+.touch-zone-left {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 45%;
+  height: 72%;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.joystick {
+  position: absolute;
+  left: calc(var(--safe-l) + 104px);
+  top: calc(100% - var(--safe-b) - 96px);
+  width: 128px;
+  height: 128px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--cream-glass);
+  border: 3px solid var(--c-wood-deep);
+  box-shadow: inset 0 0 0 6px var(--c-cream-deep), 0 3px 0 var(--ink-faint);
+  opacity: 0.75;
+  transition: opacity var(--ms-ui);
+}
+
+.joystick.is-active {
+  opacity: 1;
+}
+
+.joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--c-wood-light), var(--c-wood));
+  border: 3px solid var(--c-wood-deep);
+  box-shadow: 0 3px 0 var(--c-wood-deep);
+}
+
+.touch-buttons {
+  position: absolute;
+  right: calc(var(--safe-r) + 18px);
+  bottom: calc(var(--safe-b) + 16px);
+  width: 236px;
+  height: 196px;
+}
+
+.touch-btn {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  border-radius: 50%;
+  border: 3px solid var(--c-wood-deep);
+  background: radial-gradient(circle at 35% 28%, var(--c-wood-light), var(--c-wood));
+  box-shadow: var(--shadow-button);
+  color: var(--c-ink);
+  font: inherit;
+  pointer-events: auto;
+  touch-action: none;
+  transition: transform 90ms ease-out, box-shadow 90ms ease-out;
+}
+
+.touch-btn.is-pressed {
+  transform: translateY(3px) scale(0.94);
+  box-shadow: 0 1px 0 var(--c-wood-deep);
+}
+
+.touch-btn-icon svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.touch-btn-icon path {
+  fill: var(--c-cream);
+}
+
+.touch-btn-label {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.touch-btn--jump {
+  right: 0;
+  bottom: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at 35% 28%, var(--c-sage), var(--c-sage-deep));
+}
+
+.touch-btn--jump .touch-btn-icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.touch-btn--interact {
+  right: 104px;
+  bottom: 92px;
+  width: 76px;
+  height: 76px;
+}
+
+.touch-btn--interact.is-hinted {
+  background: radial-gradient(circle at 35% 28%, var(--c-cream), var(--c-sun));
+  animation: hint-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes hint-pulse {
+  50% {
+    box-shadow: 0 4px 0 var(--c-wood-deep), 0 0 0 7px var(--ink-faint);
+  }
+}
+
+.touch-btn--action {
+  right: 118px;
+  bottom: 0;
+  width: 68px;
+  height: 68px;
+}
+
+/* ───────────── modal */
+
+.modal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--ink-faint);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ms-ui) ease-out;
+}
+
+.modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 16px 20px 20px;
+  display: grid;
+  gap: 12px;
+  transform: scale(0.96);
+  transition: transform var(--ms-ui) ease-out;
+}
+
+.modal.is-open .modal-card {
+  transform: none;
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--c-wood-deep);
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.select-wrap {
+  position: relative;
+  display: block;
+}
+
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  margin-top: -3px;
+  border: 7px solid transparent;
+  border-top-color: var(--c-wood-deep);
+  border-bottom: 0;
+  pointer-events: none;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--c-ink);
+  padding: 10px 40px 10px 14px;
+  border-radius: var(--r-card);
+  border: 2px solid var(--c-wood-deep);
+  background: var(--c-cream-deep);
+  box-shadow: inset 0 2px 0 var(--ink-faint);
+  cursor: pointer;
+}
+
+.field-note {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.modal-done {
+  justify-self: end;
+}
+
+/* ───────────── rotate overlay (portrait phones) */
+
+.rotate-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 24px;
+  text-align: center;
+  background: var(--c-cream);
+  pointer-events: auto;
+}
+
+.rotate-overlay h2 {
+  margin: 8px 0 0;
+  font-size: 22px;
+}
+
+.rotate-overlay p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.rotate-icon svg {
+  width: 72px;
+  height: 72px;
+  animation: rotate-hint 2.4s ease-in-out infinite;
+}
+
+@keyframes rotate-hint {
+  40%,
+  70% {
+    transform: rotate(-90deg);
+  }
+}
+
+@media (orientation: portrait) {
+  .is-touch .rotate-overlay {
+    display: flex;
+  }
+}
+
+/* ───────────── scene fade + splash */
+
+.scene-fade {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 40%, var(--c-cream), var(--c-cream-deep));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ms-fade) ease-in-out;
+}
+
+.scene-fade.is-opaque {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.splash {
+  text-align: center;
+}
+
+.splash-leaf svg {
+  width: 64px;
+  height: 64px;
+  animation: leaf-sway 2s ease-in-out infinite;
+}
+
+@keyframes leaf-sway {
+  50% {
+    transform: rotate(-10deg) translateY(-4px);
+  }
+}
+
+.splash-title {
+  margin: 4px 0 0;
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--c-wood-deep);
+  letter-spacing: 0.5px;
+}
+
+.splash-sub {
+  margin: 2px 0 14px;
+  font-size: 18px;
+}
+
+.splash-loading {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+/* ───────────── compact landscape phones */
+
+@media (max-height: 460px) {
+  #ui {
+    --gap: 8px;
+  }
+  .hud-badge {
+    padding: 5px 10px 5px 5px;
+    gap: 8px;
+  }
+  .hud-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  .hud-avatar svg {
+    width: 24px;
+    height: 24px;
+  }
+  .hud-info {
+    min-width: 140px;
+    gap: 3px;
+  }
+  .hud-name {
+    font-size: 15px;
+  }
+  .meter {
+    height: 19px;
+  }
+  .meter-text {
+    line-height: 15px;
+  }
+  .icon-btn {
+    width: 42px;
+    height: 42px;
+  }
+  .hud-footer {
+    bottom: auto;
+    top: calc(var(--safe-t) + 64px);
+  }
+  /* the in-world PLACEHOLDER tag already labels the character on small screens */
+  .hud-placeholder {
+    display: none;
+  }
+  .speech-bubble {
+    width: min(340px, 52vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+  }
+}

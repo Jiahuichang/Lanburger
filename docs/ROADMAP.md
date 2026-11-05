@@ -1,6 +1,6 @@
 # Roadmap — Lingua Quest
 
-**Current phase: Phase 1 — in progress.** See `PROJECT_STATUS.md` for the exact resume point.
+**Current phase: Phase 1 — feature-complete, pending a real-phone check.** Next: Phase 2. See `PROJECT_STATUS.md`.
 
 Build one phase at a time. Each phase must pass the quality gate (bottom) before the next begins.
 
@@ -8,17 +8,18 @@ Build one phase at a time. Each phase must pass the quality gate (bottom) before
 
 - [x] Design docs: CLAUDE.md, GAME_DESIGN, ART_BIBLE, TECH_ARCHITECTURE, LEARNING_DESIGN, MINIGAME_DESIGN, ASSET_GUIDELINES, ROADMAP
 - [x] Vite + TypeScript + Three.js scaffold, strict TS
-- [x] Core engine: fixed-step loop, scene manager with fade transitions, event bus (`core/Game.ts` still to do)
+- [x] Core engine: fixed-step loop, scene manager with fade transitions, event bus, `Game.ts`
 - [x] Art tokens as single source of truth → CSS variables + canvas painter helpers
-- [ ] Parallax forest-village map (Mossbrook) with one-way platforms and painted procedural art
-- [x] Placeholder protagonist (clearly labeled) via sprite-sheet manifest; states idle/walk/jump/fall/interact/celebrate/incorrect — written, not yet verified in browser
-- [x] Player controller: run, variable jump, coyote time, jump buffer, drop-through platforms — written, not yet play-tested
-- [x] Input: keyboard + landscape touch (joystick + Jump/Interact/Action), multi-touch — touch CSS / safe areas still to do
-- [ ] HUD shell (level, XP, energy), interaction prompt on the village signpost, settings (UI language / target language)
+- [x] Parallax forest-village map (Mossbrook) with one-way platforms and painted procedural art
+- [x] Placeholder protagonist (clearly labeled) via sprite-sheet manifest; states idle/walk/jump/fall/interact/celebrate/incorrect
+- [x] Player controller: run, variable jump, coyote time, jump buffer, drop-through platforms
+- [x] Input: keyboard + landscape touch (joystick + Jump/Interact/Action), multi-touch, safe areas
+- [x] HUD shell (level, XP, energy), interaction prompt on the village signpost, settings (UI language / target language)
 - [x] Save system v1 (position, profile, stats, settings) with autosave + migration hook
 - [x] Interfaces only for learning, NPC/quest and mini-game modules
-- [ ] `index.html` + `main.ts` entry point; `npm run build` passes
-- [ ] Desktop + landscape-mobile screenshots in `docs/screenshots/phase-1/`
+- [x] `index.html` + `main.ts` entry point; `npm run build` passes
+- [x] Desktop + landscape-mobile screenshots in `docs/screenshots/phase-1/` (reviewed in its README)
+- [ ] Hands-on check on a real phone in landscape (see `PROJECT_STATUS.md`)
 
 ## Phase 2 — Polished village & NPCs
 

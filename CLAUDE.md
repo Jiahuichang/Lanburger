@@ -46,10 +46,15 @@ npm install        # once
 npm run dev        # dev server on http://localhost:5173
 npm run build      # type-check (tsc) + production build — must pass before a phase is done
 npm run preview    # serve the production build
+npm run playtest   # OPTIONAL: headless-Chrome play-test + screenshots (needs Google Chrome and
+                   # permission to launch it; skip on machines that don't allow it — see PROJECT_STATUS.md)
 ```
 
 Debug URL flags: `?touch=1` forces the mobile touch controls, `?reset=1` clears the save,
-`?debug=1` shows collision boxes and the animation-state hotkeys (1–7).
+`?debug=1` shows collision boxes and the animation-state hotkeys (1–7), `?test` exposes `window.lq` for scripts.
+
+Never run `npm run playtest` without the user's OK: it launches Chrome, and some of the user's
+computers don't allow it.
 
 ## Quality gate for every phase
 

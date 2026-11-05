@@ -129,6 +129,16 @@ export interface PaintOptions {
 
 /** Fill a path with two-tone cel shading, upper-left highlight, grain and a warm ink outline. */
 export function paint(ctx: CanvasRenderingContext2D, path: Path2D, o: PaintOptions): void {
+  // Outline first at double width, then the fill covers its inner half. For unions of blobs
+  // (canopies, clouds) this leaves only the outer silhouette inked, like a real brush line.
+  if (o.outline) {
+    ctx.save();
+    ctx.lineWidth = o.outline * 2;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = o.outlineColor ?? palette.ink;
+    ctx.stroke(path);
+    ctx.restore();
+  }
   ctx.save();
   ctx.clip(path);
   ctx.fillStyle = o.shade ?? o.fill;
@@ -151,11 +161,6 @@ export function paint(ctx: CanvasRenderingContext2D, path: Path2D, o: PaintOptio
   }
   if (o.bounds && o.grain) grain(ctx, o.bounds, rng(o.seed ?? 7), o.grain);
   ctx.restore();
-  if (o.outline) {
-    ctx.lineWidth = o.outline;
-    ctx.strokeStyle = o.outlineColor ?? palette.ink;
-    ctx.stroke(path);
-  }
 }
 
 /** Painted speckle grain (ART_BIBLE: opacity ≤ 8 %). */

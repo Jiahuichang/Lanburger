@@ -48,6 +48,7 @@ export class TouchControls implements InputSource {
 
   setVisible(v: boolean): void {
     this.root.classList.toggle('is-visible', v);
+    document.body.classList.toggle('is-touch', v);
   }
 
   /** Context label for the Interact button (e.g. "Read", "Talk"). */
