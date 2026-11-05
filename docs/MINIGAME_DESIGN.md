@@ -1,5 +1,9 @@
 # Mini-game Design — Lingua Quest
 
+> ⚠️ **Superseded (2026-11-05):** this document describes the Phase 1 side-scroller (Lingua Quest / Mossbrook).
+> The game is being redesigned as **Lanburger**, a top-down pixel-art RPG. Draft replacement: `MINIGAMES.md`.
+> The redesign plan was approved. Keep this document for history only; do not build from it.
+
 All three mini-games are **places in Verdalia**, entered through NPCs or locations, and they share one
 framework, one art bible, one save and one learning engine. Camera and rules may change; the look, the
 UI components, the fonts and the control placement do not.

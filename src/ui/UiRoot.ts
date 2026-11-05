@@ -19,6 +19,8 @@ export class UiRoot {
   hud!: Hud;
   settings!: SettingsPanel;
   private rotate: HTMLElement;
+  private toastEl: HTMLElement;
+  private toastTimer = 0;
   private services?: Services;
 
   constructor(readonly root: HTMLElement) {
@@ -43,12 +45,17 @@ export class UiRoot {
     this.fade.className = 'scene-fade is-opaque';
     this.fade.innerHTML = `
       <div class="splash">
-        <div class="splash-leaf">${icons.leaf}</div>
-        <h1 class="splash-title">Lingua Quest</h1>
+        <div class="splash-burger" aria-hidden="true"><i></i><i></i><i></i></div>
+        <h1 class="splash-title">Lanburger</h1>
         <p class="splash-sub"></p>
         <p class="splash-loading"></p>
       </div>`;
     root.append(this.fade);
+
+    this.toastEl = document.createElement('div');
+    this.toastEl.className = 'toast';
+    this.toastEl.setAttribute('role', 'status');
+    this.hudLayer.append(this.toastEl);
     this.relabelStatic();
   }
 
@@ -65,6 +72,14 @@ export class UiRoot {
     this.hud?.refresh();
     this.settings?.relabel();
     this.services?.input.touch.relabel();
+  }
+
+  /** A short message at the top of the screen (e.g. "Coming soon"). */
+  toast(text: string, ms = 2400): void {
+    this.toastEl.textContent = text;
+    this.toastEl.classList.add('is-shown');
+    window.clearTimeout(this.toastTimer);
+    this.toastTimer = window.setTimeout(() => this.toastEl.classList.remove('is-shown'), ms);
   }
 
   /** Remove the boot splash once the first scene has faded in. */

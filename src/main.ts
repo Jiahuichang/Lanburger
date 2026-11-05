@@ -22,13 +22,13 @@ async function boot(): Promise<void> {
 
   const save = new SaveSystem();
   if (params.has('reset')) save.reset();
-  setUiLanguage(save.data.profile.uiLanguage);
+  setUiLanguage('en');
 
   const ui = new UiRoot(document.getElementById('ui')!);
 
-  // Canvas-painted labels (PLACEHOLDER tag, "?" emblem) need the font before painting.
+  // HUD text uses Fredoka; wait briefly so the first frame doesn't flash a fallback font.
   await Promise.race([
-    Promise.all(['500 13px Fredoka', '600 13px Fredoka', '700 20px Fredoka'].map((f) => document.fonts.load(f))),
+    Promise.all(['500 14px Fredoka', '600 14px Fredoka', '700 20px Fredoka'].map((f) => document.fonts.load(f))),
     new Promise((r) => setTimeout(r, 2500)),
   ]);
 
@@ -38,6 +38,8 @@ async function boot(): Promise<void> {
   game.start();
   await scenes.goTo('world');
   ui.finishSplash();
+  // A Phase 1 save that was learning French (no longer offered) asks for a new language once.
+  if (save.data.flags.needsLanguagePick) ui.settings.open();
 
   // ?debug or ?test exposes services for the console and scripts/playtest.mjs
   if (flags.debug || params.has('test')) Object.assign(window, { lq: game.services });

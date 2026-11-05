@@ -1,5 +1,9 @@
 # Roadmap — Lingua Quest
 
+> ⚠️ **Superseded (2026-11-05):** this document describes the Phase 1 side-scroller (Lingua Quest / Mossbrook).
+> The game is being redesigned as **Lanburger**, a top-down pixel-art RPG. Draft replacement: `IMPLEMENTATION_PLAN.md`.
+> The redesign plan was approved. Keep this document for history only; do not build from it.
+
 **Current phase: Phase 1 — feature-complete, pending a real-phone check.** Next: Phase 2. See `PROJECT_STATUS.md`.
 
 Build one phase at a time. Each phase must pass the quality gate (bottom) before the next begins.

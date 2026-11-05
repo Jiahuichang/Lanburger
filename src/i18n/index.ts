@@ -1,37 +1,33 @@
 /**
- * UI strings (menus, HUD, prompts). This is the UI language — NOT learning content.
- * Learning content lives in content packs (LEARNING_DESIGN §8).
+ * UI strings (menus, HUD, prompts). The first release ships English UI only (GAME_DESIGN §10).
+ * Learning content and lesson explanations live in content packs, never here.
+ * To add a UI language later: add a table with the same keys and list it in UI_LANGUAGES.
  */
-import type { LanguageCode } from '../learning/types';
+import type { TargetLanguage } from '../learning/types';
 import { en } from './en';
-import { es } from './es';
-import { de } from './de';
-import { fr } from './fr';
-import { zhTW } from './zh-TW';
+
+export const UI_LANGUAGES = ['en'] as const;
+export type UiLanguage = (typeof UI_LANGUAGES)[number];
 
 export type StringKey = keyof typeof en;
 export type StringTable = Record<StringKey, string>;
 
-const tables: Record<LanguageCode, StringTable> = { en, es, de, fr, 'zh-TW': zhTW };
+const tables: Record<UiLanguage, StringTable> = { en };
 
-/** Endonyms: each language is always shown in its own name. */
-export const LANGUAGE_NAMES: Record<LanguageCode, string> = {
+/** Endonyms: each language is shown in its own name. */
+export const LANGUAGE_NAMES: Record<TargetLanguage, string> = {
   en: 'English',
   es: 'Español',
   de: 'Deutsch',
-  fr: 'Français',
+  ja: '日本語',
   'zh-TW': '繁體中文（台灣）',
 };
 
-let current: LanguageCode = 'en';
+let current: UiLanguage = 'en';
 
-export function setUiLanguage(lang: LanguageCode): void {
+export function setUiLanguage(lang: UiLanguage): void {
   current = lang;
   document.documentElement.lang = lang;
-}
-
-export function uiLanguage(): LanguageCode {
-  return current;
 }
 
 export function t(key: StringKey, vars?: Record<string, string | number>): string {

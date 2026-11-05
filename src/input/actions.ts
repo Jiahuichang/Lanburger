@@ -2,23 +2,22 @@
 export interface InputState {
   /** -1 (left) … 1 (right) */
   moveX: number;
-  /** -1 (down) … 1 (up) */
+  /** -1 (down) … 1 (up) — screen up is +. Map space is y-down, so movers flip this. */
   moveY: number;
-  jumpHeld: boolean;
-  jumpPressed: boolean;
+  runHeld: boolean;
   interactPressed: boolean;
   actionPressed: boolean;
   menuPressed: boolean;
-  /** Debug-only: number key 1–7 pressed this frame (animation preview). */
+  /** Debug-only: number key 1–6 pressed this frame (animation preview). */
   debugKey: number | null;
 }
 
-export type EdgeAction = 'jump' | 'interact' | 'action' | 'menu';
+export type EdgeAction = 'interact' | 'action' | 'menu';
 
 export interface InputSource {
   moveX(): number;
   moveY(): number;
-  jumpHeld(): boolean;
+  runHeld(): boolean;
   /** Edges since the last consume(). */
   edges(): Set<EdgeAction>;
   consume(): void;

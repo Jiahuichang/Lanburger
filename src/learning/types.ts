@@ -1,19 +1,27 @@
 /**
- * Learning Engine contracts (LEARNING_DESIGN.md). Phase 1 ships types only;
- * the engine itself arrives in Phase 3.
+ * Learning System contracts (docs/LEARNING_SYSTEM.md). Types only until phase R4.
  */
 
-export const LANGUAGES = ['en', 'es', 'de', 'fr', 'zh-TW'] as const;
-export type LanguageCode = (typeof LANGUAGES)[number];
+/** Languages a player can learn. */
+export const TARGET_LANGUAGES = ['en', 'es', 'de', 'ja', 'zh-TW'] as const;
+export type TargetLanguage = (typeof TARGET_LANGUAGES)[number];
+
+/** Languages that lesson explanations can be written in (LEARNING_SYSTEM §7, decision #3). */
+export const SUPPORT_LANGUAGES = ['en', 'zh-TW'] as const;
+export type SupportLanguage = (typeof SUPPORT_LANGUAGES)[number];
+
+/** Every language code the game knows. */
+export type LanguageCode = TargetLanguage;
 
 export type LocalizedText = Partial<Record<LanguageCode, string>>;
 export type Difficulty = 1 | 2 | 3 | 4 | 5;
 export type QuestionKind =
-  | 'choose-translation'
-  | 'choose-picture'
+  | 'choose-meaning'
+  | 'choose-target'
   | 'listen-choose'
-  | 'fill-blank'
+  | 'dialogue-reply'
   | 'order-words'
+  | 'fill-blank'
   | 'match-pairs';
 
 export interface Choice {
@@ -25,18 +33,18 @@ export interface Choice {
 
 export interface Question {
   id: string;
-  /** Learning objective id, e.g. "greet.basic". */
+  /** Topic objective id, e.g. "greet.hello". */
   objective: string;
-  targetLanguage: LanguageCode;
+  targetLanguage: TargetLanguage;
   difficulty: Difficulty;
   kind: QuestionKind;
-  /** Instruction in the UI language. */
+  /** Instruction in the support language. */
   prompt: LocalizedText;
   /** Target-language text displayed large. */
   promptTarget?: string;
   choices: Choice[];
   correctChoiceId: string;
-  /** Why the answer is right / the common mistake, in the UI language. */
+  /** Why the answer is right / the common mistake, in the support language. */
   explanation: LocalizedText;
   audio?: string;
   review: {
@@ -48,6 +56,7 @@ export interface Question {
 
 export interface VocabForm {
   text: string;
+  reading?: string;
   romanization?: string;
   gender?: 'm' | 'f' | 'n';
   audio?: string;
@@ -56,7 +65,7 @@ export interface VocabForm {
 export interface VocabItem {
   id: string;
   concept: string;
-  forms: Partial<Record<LanguageCode, VocabForm>>;
+  forms: Partial<Record<TargetLanguage, VocabForm>>;
   image?: string;
 }
 
@@ -70,5 +79,5 @@ export interface MasteryRecord {
   lastSeenAt: number;
 }
 
-/** The learning sequence every lesson follows. */
-export type LearningStage = 'teach' | 'guided-practice' | 'challenge' | 'feedback' | 'review';
+/** The seven steps of a learning encounter (LEARNING_SYSTEM §2). */
+export type LearningStage = 'situation' | 'explain' | 'example' | 'exercise' | 'feedback' | 'retry' | 'complete';

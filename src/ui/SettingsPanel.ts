@@ -1,13 +1,16 @@
 import type { Services } from '../core/Services';
-import { LANGUAGE_NAMES, setUiLanguage, t } from '../i18n';
-import { LANGUAGES, type LanguageCode } from '../learning/types';
+import { LANGUAGE_NAMES, t } from '../i18n';
+import { SUPPORT_LANGUAGES, TARGET_LANGUAGES, type SupportLanguage, type TargetLanguage } from '../learning/types';
 import { icons } from './icons';
 
-/** UI language and target language are separate settings and can never be the same (LEARNING_DESIGN §1). */
+/**
+ * Menus are always English (GAME_DESIGN §10). The player picks the language to learn and the
+ * language lesson explanations are written in (LEARNING_SYSTEM §7, decision #3).
+ */
 export class SettingsPanel {
   private el: HTMLElement;
-  private ui: HTMLSelectElement;
   private target: HTMLSelectElement;
+  private support: HTMLSelectElement;
   private _open = false;
 
   constructor(parent: HTMLElement, private s: Services) {
@@ -20,29 +23,23 @@ export class SettingsPanel {
           <button class="icon-btn icon-btn--small modal-x" type="button">${icons.close}</button>
         </div>
         <label class="field">
-          <span class="field-label" data-k="settings.uiLanguage"></span>
-          <span class="select-wrap"><select class="sel-ui"></select></span>
-        </label>
-        <label class="field">
           <span class="field-label" data-k="settings.targetLanguage"></span>
           <span class="select-wrap"><select class="sel-target"></select></span>
+        </label>
+        <label class="field">
+          <span class="field-label" data-k="settings.supportLanguage"></span>
+          <span class="select-wrap"><select class="sel-support"></select></span>
         </label>
         <p class="field-note"></p>
         <button class="btn btn--primary modal-done" type="button"></button>
       </div>`;
     parent.append(this.el);
-    this.ui = this.el.querySelector('.sel-ui')!;
     this.target = this.el.querySelector('.sel-target')!;
-    for (const sel of [this.ui, this.target]) {
-      for (const l of LANGUAGES) {
-        const o = document.createElement('option');
-        o.value = l;
-        o.textContent = LANGUAGE_NAMES[l];
-        sel.append(o);
-      }
-    }
-    this.ui.addEventListener('change', () => this.apply('ui', this.ui.value as LanguageCode));
-    this.target.addEventListener('change', () => this.apply('target', this.target.value as LanguageCode));
+    this.support = this.el.querySelector('.sel-support')!;
+    fill(this.target, TARGET_LANGUAGES);
+    fill(this.support, SUPPORT_LANGUAGES);
+    this.target.addEventListener('change', () => this.apply());
+    this.support.addEventListener('change', () => this.apply());
     this.el.querySelector('.modal-x')!.addEventListener('click', () => this.close());
     this.el.querySelector('.modal-done')!.addEventListener('click', () => this.close());
     this.el.addEventListener('pointerdown', (e) => {
@@ -83,25 +80,27 @@ export class SettingsPanel {
 
   private sync(): void {
     const p = this.s.save.data.profile;
-    this.ui.value = p.uiLanguage;
     this.target.value = p.targetLanguage;
+    this.support.value = p.supportLanguage;
   }
 
-  private apply(which: 'ui' | 'target', lang: LanguageCode): void {
+  private apply(): void {
+    const target = this.target.value as TargetLanguage;
+    const support = this.support.value as SupportLanguage;
     this.s.save.update((d) => {
-      const p = d.profile;
-      if (which === 'ui') {
-        if (lang === p.targetLanguage) p.targetLanguage = p.uiLanguage; // swap, never equal
-        p.uiLanguage = lang;
-      } else {
-        if (lang === p.uiLanguage) p.uiLanguage = p.targetLanguage;
-        p.targetLanguage = lang;
-      }
+      d.profile.targetLanguage = target;
+      d.profile.supportLanguage = support;
+      delete d.flags.needsLanguagePick;
     });
-    const p = this.s.save.data.profile;
-    setUiLanguage(p.uiLanguage);
-    this.sync();
-    this.s.ui.relabel();
-    this.s.events.emit('language:changed', { ui: p.uiLanguage, target: p.targetLanguage });
+    this.s.events.emit('language:changed', { target, support });
+  }
+}
+
+function fill(sel: HTMLSelectElement, langs: readonly TargetLanguage[]): void {
+  for (const l of langs) {
+    const o = document.createElement('option');
+    o.value = l;
+    o.textContent = LANGUAGE_NAMES[l];
+    sel.append(o);
   }
 }

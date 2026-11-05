@@ -1,5 +1,9 @@
 # Art Bible — Lingua Quest
 
+> ⚠️ **Superseded (2026-11-05):** this document describes the Phase 1 side-scroller (Lingua Quest / Mossbrook).
+> The game is being redesigned as **Lanburger**, a top-down pixel-art RPG. Draft replacement: `ART_DIRECTION.md`.
+> The redesign plan was approved. Keep this document for history only; do not build from it.
+
 This is the **single source of truth** for how Lingua Quest looks. The machine-readable half is
 `src/art/tokens.ts`; it feeds both the Three.js painters and the CSS variables of the HTML UI.
 If this document and `tokens.ts` disagree, fix one so they match — never fork the style.

@@ -1,48 +1,50 @@
-import * as THREE from 'three';
-import type { Painted } from './proceduralArt';
+import type * as THREE from 'three';
+import { pixelTexture } from '../art/pixel';
+
+/** A sprite image with its anchor (the pixel that sits on the ground point). */
+export interface SpriteImage {
+  canvas: HTMLCanvasElement;
+  tex: THREE.Texture;
+  w: number;
+  h: number;
+  anchor: { x: number; y: number };
+}
 
 /**
- * Keyed, cached asset store (TECH_ARCHITECTURE §2, ASSET_GUIDELINES §2).
- * Phase 1: every key is painted procedurally on first use.
- * Later: `override(key, url)` swaps a key for a hand-drawn PNG without touching gameplay code.
+ * Keyed, cached asset store (ART_DIRECTION §3).
+ * R1/R2: every key is painted procedurally by the pixel painter on first use.
+ * Later: `override(key, url)` swaps a key for a hand-made PNG of the same size and anchor,
+ * without touching gameplay code. All textures use nearest filtering.
  */
 class AssetRegistry {
-  private textures = new Map<string, THREE.Texture>();
-  private paintedCache = new Map<string, Painted>();
-  private overrides = new Map<string, string>();
-  private loader = new THREE.TextureLoader();
+  private sprites = new Map<string, SpriteImage>();
+  private overrides = new Map<string, HTMLImageElement>();
 
-  texture(key: string, make: () => THREE.Texture): THREE.Texture {
-    let t = this.textures.get(key);
-    if (!t) {
-      t = this.overrides.has(key) ? this.load(this.overrides.get(key)!) : make();
-      this.textures.set(key, t);
+  sprite(key: string, make: () => { canvas: HTMLCanvasElement; anchor: { x: number; y: number } }): SpriteImage {
+    let s = this.sprites.get(key);
+    if (!s) {
+      const made = make();
+      const img = this.overrides.get(key);
+      const source = img ?? made.canvas;
+      s = {
+        canvas: made.canvas,
+        tex: pixelTexture(source),
+        w: made.canvas.width,
+        h: made.canvas.height,
+        anchor: made.anchor,
+      };
+      this.sprites.set(key, s);
     }
-    return t;
+    return s;
   }
 
-  painted(key: string, make: () => Painted): Painted {
-    let p = this.paintedCache.get(key);
-    if (!p) {
-      p = make();
-      const url = this.overrides.get(key);
-      if (url) p = { ...p, tex: this.load(url) };
-      this.paintedCache.set(key, p);
-    }
-    return p;
-  }
-
-  /** Replace a procedural key with a file from /public/assets (same world size). */
-  override(key: string, url: string): void {
-    this.overrides.set(key, url);
-    this.textures.delete(key);
-    this.paintedCache.delete(key);
-  }
-
-  private load(url: string): THREE.Texture {
-    const t = this.loader.load(url);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
+  /** Replace a procedural key with a PNG from /public (same size and anchor). Call before first use. */
+  async override(key: string, url: string): Promise<void> {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    this.overrides.set(key, img);
+    this.sprites.delete(key);
   }
 }
 

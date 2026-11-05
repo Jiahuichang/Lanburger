@@ -1,16 +1,28 @@
 /**
- * Mini-game Framework contracts (MINIGAME_DESIGN §1). Interface only in Phase 1;
- * the framework and Vocabulary Snake arrive in Phase 4.
+ * Mini-game Framework contracts (docs/MINIGAMES.md §2). Interface only until phase R7.
+ * One core per game; villages only supply a MiniGameTheme (data) and topic ids.
  */
 import type { Scene, ReturnPoint } from '../core/Scene';
-import type { Difficulty, LanguageCode } from '../learning/types';
+import type { Difficulty, TargetLanguage } from '../learning/types';
 
 export type MiniGameId = 'snake' | 'cooking' | 'kart';
 
+/** Village-specific presentation for one mini-game. Pure data, no logic. */
+export interface MiniGameTheme {
+  id: string;
+  gameId: MiniGameId;
+  tileset: string;
+  props: Record<string, string>;
+  music?: string;
+  /** English UI strings, e.g. the mini-game title. */
+  strings: Record<string, string>;
+}
+
 export interface MiniGameConfig {
   gameId: MiniGameId;
-  targetLanguage: LanguageCode;
-  uiLanguage: LanguageCode;
+  theme: MiniGameTheme;
+  topicIds: string[];
+  targetLanguage: TargetLanguage;
   /** Vocabulary ids — must already be taught. */
   itemPool: string[];
   difficulty: Difficulty;

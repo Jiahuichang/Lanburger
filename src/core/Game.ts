@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-import { palette } from '../art/tokens';
 import { EventBus } from './EventBus';
 import { GameLoop } from './GameLoop';
 import { SceneManager } from './SceneManager';
@@ -7,23 +5,20 @@ import type { DebugFlags, GameEvents, Services } from './Services';
 import { InputManager } from '../input/InputManager';
 import type { SaveSystem } from '../save/SaveSystem';
 import type { UiRoot } from '../ui/UiRoot';
+import { PixelRenderer } from '../render/PixelRenderer';
 
-/** Owns the renderer, loop, scene manager and the service bundle handed to scenes. */
+/** Owns the pixel renderer, loop, scene manager and the service bundle handed to scenes. */
 export class Game {
   readonly services: Services;
   private loop: GameLoop;
 
   constructor(container: HTMLElement, ui: UiRoot, save: SaveSystem, flags: DebugFlags) {
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.setClearColor(palette.skyLight);
-    container.append(renderer.domElement);
+    const pixel = new PixelRenderer(container);
 
     const events = new EventBus<GameEvents>();
     const input = new InputManager(ui.controlsLayer, flags.forceTouch);
     const services: Services = {
-      renderer,
+      pixel,
       events,
       input,
       save,
@@ -47,7 +42,7 @@ export class Game {
     const resize = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      renderer.setSize(w, h, false);
+      pixel.resize(w, h);
       services.scenes.resize(w, h);
     };
     window.addEventListener('resize', resize);

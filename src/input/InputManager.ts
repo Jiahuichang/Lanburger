@@ -17,8 +17,7 @@ export class InputManager {
   readonly state: InputState = {
     moveX: 0,
     moveY: 0,
-    jumpHeld: false,
-    jumpPressed: false,
+    runHeld: false,
     interactPressed: false,
     actionPressed: false,
     menuPressed: false,
@@ -40,19 +39,18 @@ export class InputManager {
     const s = this.state;
     let mx = 0;
     let my = 0;
-    let held = false;
+    let run = false;
     const edges = new Set<string>();
     for (const src of this.sources) {
       mx += src.moveX();
       my += src.moveY();
-      held ||= src.jumpHeld();
+      run ||= src.runHeld();
       src.edges().forEach((e) => edges.add(e));
     }
     const on = this.enabled;
     s.moveX = on ? clamp(mx) : 0;
     s.moveY = on ? clamp(my) : 0;
-    s.jumpHeld = on && held;
-    s.jumpPressed = on && edges.has('jump');
+    s.runHeld = on && run;
     s.interactPressed = on && edges.has('interact');
     s.actionPressed = on && edges.has('action');
     s.menuPressed = edges.has('menu');
@@ -64,7 +62,7 @@ export class InputManager {
   consumeEdges(): void {
     for (const src of this.sources) src.consume();
     const s = this.state;
-    s.jumpPressed = s.interactPressed = s.actionPressed = s.menuPressed = false;
+    s.interactPressed = s.actionPressed = s.menuPressed = false;
     s.debugKey = null;
   }
 }

@@ -1,43 +1,49 @@
-# Lingua Quest — Instructions for Claude Code
+# Lanburger — Instructions for Claude Code
 
-Lingua Quest is a browser-based, side-scrolling fantasy RPG for learning languages. It is built with
-**Three.js + TypeScript + Vite**. One cozy, hand-drawn chibi world holds the RPG and its three
-integrated mini-games (Vocabulary Snake, Cooking Challenge, Language Kart Racing).
+Lanburger is a browser-based, story-driven **top-down pixel-art RPG** for learning languages, built with
+**Three.js + TypeScript + Vite**. The player is Lanburger, an original burger hero, exploring **Hello Town**
+(the first village), meeting NPCs and learning through contextual quests. Three reusable mini-games
+(Language Cooking, Vocabulary Snake, Language Kart Racing) come later.
+
+Communicate with the user in **Traditional Chinese (Taiwan)**. All in-game UI text is **English**.
 
 ## Read these before you change anything
 
-You MUST read the documents relevant to your change before you modify code or assets:
+| If you touch…                                      | Read first                                                     |
+| -------------------------------------------------- | -------------------------------------------------------------- |
+| Anything (always)                                  | `PROJECT_STATUS.md` — where work stopped, known issues          |
+| Anything (always)                                  | `docs/IMPLEMENTATION_PLAN.md` — current phase (R1…), scope, decisions |
+| Gameplay, story, NPCs, controls                    | `docs/GAME_DESIGN.md`                                          |
+| Any visual: colors, sprites, tiles, UI, lighting   | `docs/ART_DIRECTION.md` + `src/art/tokens.ts`                  |
+| Maps, buildings, unlock order                      | `docs/WORLD_MAP.md`                                            |
+| Lessons, questions, review, languages              | `docs/LEARNING_SYSTEM.md`                                      |
+| Quests, XP, energy, mastery, burger growth, save   | `docs/PROGRESSION_SYSTEM.md`                                   |
+| Cooking / Snake / Kart or the mini-game framework  | `docs/MINIGAMES.md`                                            |
 
-| If you touch…                                   | Read first                                                     |
-| ----------------------------------------------- | -------------------------------------------------------------- |
-| Anything (always)                               | `PROJECT_STATUS.md` — where work stopped, known issues, next steps |
-| Anything (always)                               | `docs/ROADMAP.md` — current phase and its scope                |
-| Gameplay, world, quests, NPCs, economy          | `docs/GAME_DESIGN.md`                                          |
-| Any visual: colors, sprites, UI, VFX, layout    | `docs/ART_BIBLE.md` + `src/art/tokens.ts`                      |
-| Code structure, modules, scenes, save, input    | `docs/TECH_ARCHITECTURE.md`                                    |
-| Questions, lessons, review, languages, i18n     | `docs/LEARNING_DESIGN.md`                                      |
-| Snake / Cooking / Kart or the mini-game framework | `docs/MINIGAME_DESIGN.md`                                    |
-| Adding or replacing art, audio, fonts, manifests | `docs/ASSET_GUIDELINES.md`                                    |
+The older docs (`ART_BIBLE`, `LEARNING_DESIGN`, `MINIGAME_DESIGN`, `ROADMAP`, `TECH_ARCHITECTURE`,
+`ASSET_GUIDELINES`) describe the retired Phase 1 side-scroller. Use them only for history.
 
 ## Hard rules
 
-1. **Stack is fixed.** Three.js, TypeScript, Vite. Do not add Phaser, Unity, Godot, React, or React Three Fiber.
-2. **One art bible.** Every color, radius, font and shadow comes from `src/art/tokens.ts` (it also
-   generates the CSS variables). Never hard-code a hex value in a scene, mini-game or UI file.
-   No generic demo graphics, realistic 3D assets, or a second UI style.
-3. **The protagonist is a placeholder.** Do not design a final protagonist. Character art enters only
-   through a `CharacterSpriteManifest` (see `src/character/`). Gameplay code must never import a
-   specific character's art.
-4. **Rendering is separate from logic.** Controllers (physics, AI, quest logic) never touch Three.js
-   meshes directly; views never decide gameplay.
-5. **No permanent blockers.** Energy, failed answers or lost mini-games may slow the player down but must
-   always leave a free path forward (see `docs/GAME_DESIGN.md` → Energy).
-6. **UI language ≠ target language.** Never mix them. UI strings live in `src/i18n/`; learning content
-   lives in the learning content packs.
-7. **Stay in phase.** Only build what `docs/ROADMAP.md` lists for the current phase. Do not start a later
-   mini-game early.
-8. **Save compatibility.** Changing the save shape means bumping `SAVE_VERSION` and adding a migration
-   in `src/save/SaveSystem.ts`.
+1. **Stack is fixed.** Three.js, TypeScript, Vite. No Phaser, Unity, Godot, React or React Three Fiber.
+2. **One art direction.** Every color, radius and font comes from `src/art/tokens.ts`, which also generates the
+   CSS variables. Never hard-code a hex value in a scene, mini-game or UI file. Pixel art stays on the grid:
+   `NearestFilter`, integer positions, no smooth scaling.
+3. **Characters enter only through manifests.** Lanburger and every NPC are drawn from a `CharacterSpriteManifest`
+   (`src/character/`). Gameplay code never imports a specific character's art.
+4. **Rendering is separate from logic.** Controllers and systems (movement, collision, quests, learning) never
+   touch Three.js meshes. Views never decide gameplay.
+5. **No permanent blockers.** Wrong answers may cost energy, but there is always a free way forward
+   (`docs/PROGRESSION_SYSTEM.md` §3).
+6. **UI language ≠ learning content.** UI strings live in `src/i18n/` (English only for now). Learning content and
+   explanations live in content packs.
+7. **Data-driven content.** Maps, NPCs, quests and lessons are data in `src/content/`. Reusable systems contain
+   nothing village-specific.
+8. **Stay in phase.** Only build what `docs/IMPLEMENTATION_PLAN.md` §5 lists for the current phase.
+9. **Save compatibility.** Changing the save shape means bumping `SAVE_VERSION` and adding a migration in
+   `src/save/SaveSystem.ts`.
+10. **Friend photos are private.** They live in `references/private/` (git-ignored) and are never committed or
+    shipped. Only the derived pixel sprites and text character cards go into the repo.
 
 ## Commands
 
@@ -46,19 +52,19 @@ npm install        # once
 npm run dev        # dev server on http://localhost:5173
 npm run build      # type-check (tsc) + production build — must pass before a phase is done
 npm run preview    # serve the production build
-npm run playtest   # OPTIONAL: headless-Chrome play-test + screenshots (needs Google Chrome and
-                   # permission to launch it; skip on machines that don't allow it — see PROJECT_STATUS.md)
+npm run playtest   # OPTIONAL headless-Chrome play-test (needs permission to launch Chrome)
 ```
 
-Debug URL flags: `?touch=1` forces the mobile touch controls, `?reset=1` clears the save,
-`?debug=1` shows collision boxes and the animation-state hotkeys (1–7), `?test` exposes `window.lq` for scripts.
+Never run `npm run playtest` without the user's OK: it launches Chrome, and some of the user's computers don't allow it.
 
-Never run `npm run playtest` without the user's OK: it launches Chrome, and some of the user's
-computers don't allow it.
+Debug URL flags: `?touch=1` forces touch controls, `?reset=1` clears the save, `?debug=1` shows collision boxes and
+the animation hotkeys (1–6), `?test` exposes `window.lq` for scripts.
 
 ## Quality gate for every phase
 
-A phase is done only when: `npm run build` passes; the game is playable on desktop (keyboard) and in
-landscape mobile (touch); no visual element breaks the art bible; scene transitions work; nothing can
-block progression; earlier features still work; desktop and landscape-mobile screenshots are saved in
-`docs/screenshots/phase-N/` and reviewed against `docs/ART_BIBLE.md`.
+A phase is done only when:
+- `npm run build` passes.
+- The game plays on desktop (keyboard) and on a landscape phone (touch).
+- Nothing breaks `docs/ART_DIRECTION.md` §10.
+- Scene transitions work, nothing can block progression, and earlier features still work.
+- Desktop and landscape-mobile screenshots are saved in `docs/screenshots/<phase>/` and reviewed.

@@ -1,78 +1,99 @@
 /**
- * ART BIBLE IN CODE — single source of truth for every color, radius, font, shadow and layer.
- * See docs/ART_BIBLE.md. Never hard-code visual values elsewhere; import them from here.
+ * ART DIRECTION IN CODE — the single source of truth for every color, radius, font and pixel metric.
+ * See docs/ART_DIRECTION.md §4 and §9. Never hard-code visual values elsewhere; import them from here.
+ *
+ * Ramps go light → dark: [0] highlight, [1] base, [2] shade, [3] deep shade.
+ * Sampled from references/lanburger-town.png (dusk village, mid brightness, rich midtones).
  */
 
+export type Ramp = readonly [string, string, string, string];
+
+export const ramps = {
+  stone: ['#efc0a2', '#d39a7a', '#9c6a55', '#5a3c34'],
+  plaza: ['#f2c9ad', '#dfa98a', '#b07a62', '#6e4a3e'],
+  foliage: ['#a9b44c', '#5f8a3e', '#2f5a3c', '#1d3330'],
+  grass: ['#8fae4a', '#5d8a3f', '#3f6a38', '#27452e'],
+  blossom: ['#f8b4c6', '#e57fa3', '#b34f7c', '#6a2c50'],
+  roofRed: ['#c4585a', '#a8464c', '#722f3e', '#3d1b29'],
+  bunOrange: ['#f8c27a', '#f18f30', '#c06420', '#7a3a16'],
+  wood: ['#c98a5e', '#955f48', '#623d36', '#2f1a19'],
+  wall: ['#f2e3c4', '#d9c29a', '#a8906c', '#6b5a45'],
+  slate: ['#c9c3c7', '#9d97a3', '#6e6a78', '#3f3d4a'],
+  royal: ['#b47bcc', '#8f55ab', '#64397d', '#3a2048'],
+  water: ['#bfe2f5', '#61a8df', '#3369b0', '#22386a'],
+  lamp: ['#fffbe0', '#fde882', '#e49c29', '#9a5718'],
+  shade: ['#4a4e66', '#313e42', '#232a36', '#141820'],
+  patty: ['#a0583a', '#7a3e2a', '#55291f', '#2f1612'],
+  skin: ['#fbd9bd', '#e9b48f', '#c4876a', '#8a5a48'],
+  soil: ['#a07a52', '#7d5b3c', '#5a4030', '#3a2a20'],
+} as const satisfies Record<string, Ramp>;
+
+export type RampId = keyof typeof ramps;
+
+/** Flat named colors for UI and effects. Every one becomes a CSS variable `--c-<kebab-name>`. */
 export const palette = {
-  sage: '#9cbf8a',
-  sageDeep: '#6f9a64',
-  sageDark: '#4f7a52',
-  cream: '#fbf3e1',
-  creamDeep: '#f1e2c2',
-  wood: '#a8764a',
-  woodDeep: '#7a5232',
-  woodLight: '#d3a774',
-  sky: '#a8d8ef',
-  skyLight: '#dff1f5',
-  earth: '#b98a5e',
-  earthDeep: '#8a6142',
-  ink: '#4a3426',
-  blossom: '#f4a9a8',
-  berry: '#d9707a',
-  sun: '#ffd97a',
-  correct: '#7fbf6a',
-  gentleWrong: '#e8a05c',
-  energy: '#6fc3d9',
+  ink: '#2a1a16',
+  void: ramps.shade[3],
+  panel: '#1c1f29',
+  panelDeep: '#121315',
+  panelEdge: '#e6dcad',
+  title: '#e5cf5e',
+  text: '#f4efe4',
+  textSoft: '#b9b2a2',
+  energy: '#ef5a3c',
+  energyDeep: '#8a2a1e',
+  xp: '#3d8ef0',
+  xpDeep: '#1b4787',
+  badge: '#f34248',
+  correct: '#6cc04a',
+  gentleWrong: '#f0a040',
+  frame: ramps.wood[1],
+  frameLight: ramps.wood[0],
+  frameDark: ramps.wood[3],
+  glow: ramps.lamp[1],
+  glowWarm: ramps.lamp[2],
+  /** Multiplied over the whole map: the dusk mood (ART_DIRECTION §1.2, §8). */
+  duskTint: '#b4a6c2',
+  white: '#ffffff',
 } as const;
 
 export type PaletteKey = keyof typeof palette;
 
-/** How strongly each parallax layer is mixed toward the horizon sky (aerial perspective). */
-export const haze = {
-  far: 0.55,
-  midFar: 0.32,
-  mid: 0.12,
-} as const;
-
-export const outline = {
-  character: 3,
-  prop: 3,
-  small: 2,
-} as const;
-
 export const radii = {
-  panel: 16,
-  card: 12,
+  panel: 10,
+  card: 8,
+  button: 12,
   pill: 999,
 } as const;
 
 export const fonts = {
-  ui: '"Fredoka", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif',
-  canvas: '600 20px Fredoka',
+  /** UI font (English). CJK fallbacks are listed for learning content shown in the same element. */
+  ui: '"Fredoka", "Hiragino Sans", "Noto Sans JP", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif',
 } as const;
 
 export const motion = {
-  uiMs: 180,
-  sceneFadeMs: 350,
-  maxSquash: 0.12,
+  uiMs: 160,
+  sceneFadeMs: 320,
 } as const;
 
-/** Parallax layer table (ART_BIBLE §5). factor = how much the layer follows the camera. */
-export const layers = {
-  sky: { factor: 0.0, z: -100, order: 0 },
-  far: { factor: 0.15, z: -80, order: 10 },
-  midFar: { factor: 0.4, z: -60, order: 20 },
-  mid: { factor: 0.7, z: -40, order: 30 },
-  play: { factor: 1.0, z: 0, order: 40 },
-  foreground: { factor: 1.25, z: 40, order: 60 },
-  fx: { factor: 1.0, z: 60, order: 70 },
+/** Pixel-art metrics (ART_DIRECTION §9). */
+export const pixel = {
+  /** Map tile size in art pixels. */
+  tile: 16,
+  /** The renderer picks an integer zoom so the native view height lands near this many art pixels. */
+  targetViewHeight: 360,
+  /** Never show fewer art pixels than this vertically (very small screens zoom out instead). */
+  minViewHeight: 280,
 } as const;
 
-export type LayerId = keyof typeof layers;
-
-export const world = {
-  /** The camera always shows this many world units vertically. */
-  viewHeight: 540,
-  /** Visible body height of a standard character. */
-  characterHeight: 96,
+/** Depth bands. Actors and props sort by their foot line: z = actorBase + footY * depthPerPixel. */
+export const depth = {
+  ground: -60,
+  groundDetail: -59,
+  shadow: -58,
+  actorBase: -50,
+  depthPerPixel: 0.01,
+  overlay: 60,
+  glow: 70,
+  debug: 90,
 } as const;

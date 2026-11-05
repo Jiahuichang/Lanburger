@@ -1,17 +1,18 @@
 /**
- * Automated play-test + screenshots for the phase quality gate (CLAUDE.md).
- * Drives the real game in headless Chrome: keyboard on desktop, multi-touch on landscape mobile.
+ * OPTIONAL automated play-test + screenshots for the phase quality gate (CLAUDE.md).
+ * Drives the real game in headless Google Chrome: keyboard on desktop, multi-touch on a landscape phone.
+ * Needs permission to launch Chrome — never run it without the user's OK.
  *
  *   npm run dev            (in another terminal)
- *   npm run playtest       → screenshots in docs/screenshots/phase-1/
+ *   npm run playtest       → screenshots in docs/screenshots/r1/
  *
- * Env: BASE_URL (default http://localhost:5173), CHROME_PATH (default: system Google Chrome).
+ * Env: BASE_URL (default http://localhost:5173), CHROME_PATH (default: system Google Chrome), OUT_DIR.
  */
 import { chromium } from 'playwright-core';
 import { mkdirSync } from 'node:fs';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173';
-const OUT = process.env.OUT_DIR ?? 'docs/screenshots/phase-1';
+const OUT = process.env.OUT_DIR ?? 'docs/screenshots/r1';
 const CHROME =
   process.env.CHROME_PATH ??
   (process.platform === 'darwin'
@@ -40,249 +41,153 @@ async function open(context, query) {
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   await page.goto(`${BASE}/?test${query}`);
-  await page.waitForFunction(() => window.lq?.scenes?.current && !window.lq.scenes.isTransitioning, null, { timeout: 20000 });
-  // wait until the simulation is really ticking (player has settled on the ground)
-  await page.waitForFunction(() => window.lq.scenes.current.player?.onGround, null, { timeout: 20000 });
-  await sleep(600);
+  await page.waitForFunction(() => window.lq?.scenes?.current?.player && !window.lq.scenes.isTransitioning, null, { timeout: 20000 });
+  await sleep(900);
   return { page, errors };
 }
 
 const state = (page) =>
   page.evaluate(() => {
-    const p = window.lq.scenes.current.player;
-    return { x: p.body.x, y: p.body.y, onGround: p.onGround, anim: p.animState };
+    const s = window.lq.scenes.current;
+    return { x: s.player.x, y: s.player.y, facing: s.player.facing, anim: s.player.animState, nearby: s.nearby?.id ?? null };
   });
+const place = (page, x, y, facing = 'down') =>
+  page.evaluate(([x, y, f]) => window.lq.scenes.current.player.place(x, y, f), [x, y, facing]);
 
-async function hold(page, key, ms) {
-  await page.keyboard.down(key);
+async function hold(page, keys, ms) {
+  for (const k of keys) await page.keyboard.down(k);
   await sleep(ms);
-  await page.keyboard.up(key);
-}
-
-async function walkTo(page, targetX) {
-  let lastX = null;
-  for (let i = 0; i < 80; i++) {
-    const s = await state(page);
-    if (Math.abs(s.x - targetX) < 14) break;
-    const key = s.x < targetX ? 'ArrowRight' : 'ArrowLeft';
-    if (lastX !== null && Math.abs(s.x - lastX) < 4) {
-      // blocked (e.g. the tree stump): jump over it like a player would
-      await page.keyboard.down(key);
-      await hold(page, 'Space', 300);
-      await sleep(250);
-      await page.keyboard.up(key);
-    } else {
-      await hold(page, key, Math.min(260, Math.abs(s.x - targetX) * 2.2));
-    }
-    lastX = s.x;
-  }
-  await sleep(250);
+  for (const k of keys) await page.keyboard.up(k);
+  await sleep(120);
 }
 
 // ───────────────────────── desktop (keyboard)
 {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
-  const { page, errors } = await open(ctx, '&reset=1');
-  await page.screenshot({ path: `${OUT}/desktop-01-start.png` });
-
-  let s = await state(page);
-  check('spawns on the ground', s.onGround && Math.abs(s.y) < 1, JSON.stringify(s));
-
-  await hold(page, 'ArrowRight', 500);
-  const moved = await state(page);
-  check('walks right with arrow key', moved.x > s.x + 60, `x ${s.x.toFixed(0)} → ${moved.x.toFixed(0)}`);
-
-  await page.keyboard.down('Space');
-  let peak = 0;
-  for (let i = 0; i < 12; i++) {
-    await sleep(40);
-    peak = Math.max(peak, (await state(page)).y);
-  }
-  await page.keyboard.up('Space');
-  await sleep(700);
-  check('full jump reaches > 120 units', peak > 120, `peak ${peak.toFixed(0)}`);
-  check('lands again', (await state(page)).onGround);
-
-  await page.keyboard.press('Space'); // tap = short hop
-  let hop = 0;
-  for (let i = 0; i < 12; i++) {
-    await sleep(40);
-    hop = Math.max(hop, (await state(page)).y);
-  }
-  await sleep(600);
-  check('tap jump is lower than held jump (variable height)', hop < peak - 20, `tap ${hop.toFixed(0)} vs held ${peak.toFixed(0)}`);
-
-  // signpost interaction
-  await walkTo(page, 420);
-  const prompt = await page.locator('.world-prompt').evaluate((e) => e.classList.contains('is-shown'));
-  check('interaction prompt appears near the signpost', prompt);
-  await page.keyboard.press('KeyE');
-  await sleep(500);
-  const bubble = await page.locator('.speech-bubble').evaluate((e) => e.classList.contains('is-shown'));
-  check('E opens the sign speech bubble', bubble);
-  await page.screenshot({ path: `${OUT}/desktop-02-signpost.png` });
-
-  // one-way platform: jump up through it from below and stand on it (platform x 560–760, y 120)
-  await walkTo(page, 640);
-  await hold(page, 'Space', 420);
-  await sleep(700);
-  s = await state(page);
-  check('jumps up through a one-way platform and stands on it', s.onGround && Math.abs(s.y - 120) < 1, JSON.stringify(s));
-  await page.screenshot({ path: `${OUT}/desktop-03-platform.png` });
-
-  // drop through
-  await page.keyboard.down('ArrowDown');
-  await sleep(120);
-  await page.keyboard.press('Space');
-  await sleep(120);
-  await page.keyboard.up('ArrowDown');
-  await sleep(800);
-  s = await state(page);
-  check('Down + Jump drops through the platform', s.onGround && Math.abs(s.y) < 1, JSON.stringify(s));
-
-  // celebrate emote
-  await page.keyboard.press('KeyQ');
-  await sleep(250);
-  s = await state(page);
-  check('Q plays the celebrate animation', s.anim === 'celebrate', s.anim);
-  await page.screenshot({ path: `${OUT}/desktop-04-celebrate.png` });
-  await sleep(1000);
-
-  // treehouse platforms near the big tree
-  await walkTo(page, 1500);
-  await page.screenshot({ path: `${OUT}/desktop-05-village.png` });
-
-  // east end: locked grove gate
-  await walkTo(page, 3400);
-  await page.keyboard.press('KeyE');
-  await sleep(500);
-  check('locked grove gate explains how it opens', await page.locator('.speech-bubble').evaluate((e) => e.classList.contains('is-shown')));
-  await page.screenshot({ path: `${OUT}/desktop-06-grove-gate.png` });
-
-  // save + reload restores position
-  const before = await state(page);
-  await sleep(1300);
-  await page.goto(`${BASE}/?test`); // no reset this time
-  await page.waitForFunction(() => window.lq?.scenes?.current && !window.lq.scenes.isTransitioning);
-  await sleep(500);
-  const after = await state(page);
-  check('position persists across reload', Math.abs(after.x - before.x) < 40, `${before.x.toFixed(0)} → ${after.x.toFixed(0)}`);
-
-  // settings: switch UI language to Traditional Chinese, target stays different
-  await page.click('.hud-settings');
-  await sleep(300);
-  await page.screenshot({ path: `${OUT}/desktop-07-settings.png` });
-  await page.selectOption('.sel-ui', 'zh-TW');
-  await sleep(200);
-  const langs = await page.evaluate(() => window.lq.save.data.profile);
-  check('UI language and target language stay different', langs.uiLanguage !== langs.targetLanguage, `${langs.uiLanguage} / ${langs.targetLanguage}`);
-  await page.selectOption('.sel-target', 'zh-TW');
-  await sleep(200);
-  const swapped = await page.evaluate(() => window.lq.save.data.profile);
-  check('choosing the UI language as target swaps them', swapped.uiLanguage !== swapped.targetLanguage, `${swapped.uiLanguage} / ${swapped.targetLanguage}`);
-  await page.selectOption('.sel-ui', 'zh-TW');
-  await page.selectOption('.sel-target', 'es');
-  await page.click('.modal-done');
-  await sleep(400);
-  await page.screenshot({ path: `${OUT}/desktop-08-zh-TW-ui.png` });
-
-  check('no console errors (desktop)', errors.length === 0, errors.join(' | '));
-  await ctx.close();
-}
-
-// ───────────────────────── animation sheet review (all 7 states)
-{
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
-  const { page } = await open(ctx, '&reset=1&debug=1');
-  const states = ['idle', 'walk', 'jump', 'fall', 'interact', 'celebrate', 'incorrect'];
-  for (let i = 0; i < states.length; i++) {
-    await page.keyboard.press(`Digit${i + 1}`);
-    await sleep(i === 4 || i >= 5 ? 250 : 400);
-    const anim = (await state(page)).anim;
-    check(`debug hotkey ${i + 1} shows "${states[i]}"`, anim === states[i], anim);
-    const box = await page.evaluate(() => {
-      const sc = window.lq.scenes.current;
-      const v = sc.view.object.position.clone().project(sc.camera);
-      return { x: ((v.x + 1) / 2) * innerWidth, y: ((1 - v.y) / 2) * innerHeight };
-    });
-    await page.screenshot({
-      path: `${OUT}/anim-${i + 1}-${states[i]}.png`,
-      clip: { x: box.x - 90, y: box.y - 190, width: 180, height: 210 },
-    });
-  }
-  await ctx.close();
-}
-
-// ───────────────────────── landscape phone (multi-touch)
-{
-  const ctx = await browser.newContext({
-    viewport: { width: 812, height: 375 },
-    deviceScaleFactor: 2,
-    isMobile: true,
-    hasTouch: true,
-  });
-  const { page, errors } = await open(ctx, '&reset=1');
-  await page.screenshot({ path: `${OUT}/mobile-01-start.png` });
-  check('touch controls visible on a touch device', await page.locator('.touch-controls').evaluate((e) => getComputedStyle(e).display !== 'none'));
-
-  const cdp = await ctx.newCDPSession(page);
-  const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points });
-  const jump = await page.locator('.touch-btn--jump').boundingBox();
-  const jx = jump.x + jump.width / 2;
-  const jy = jump.y + jump.height / 2;
+  const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const { page, errors } = await open(context, '&reset=1');
+  await page.screenshot({ path: `${OUT}/pt-desktop-01-start.png` });
 
   const s0 = await state(page);
-  // left thumb: joystick drag right and hold
-  await touch('touchStart', [{ x: 110, y: 290, id: 1 }]);
-  await touch('touchMove', [{ x: 170, y: 290, id: 1 }]);
-  await sleep(450);
-  // right thumb presses Jump while the left thumb keeps holding (multi-touch)
-  await touch('touchStart', [{ x: 170, y: 290, id: 1 }, { x: jx, y: jy, id: 2 }]);
-  let peak = 0;
-  for (let i = 0; i < 8; i++) {
-    await sleep(40);
-    peak = Math.max(peak, (await state(page)).y);
-  }
-  await page.screenshot({ path: `${OUT}/mobile-02-joystick-jump.png` });
-  await touch('touchEnd', [{ x: 170, y: 290, id: 1 }]);
-  await touch('touchEnd', []);
-  await sleep(700);
+  await hold(page, ['ArrowLeft'], 600);
   const s1 = await state(page);
-  check('joystick moves the player', s1.x > s0.x + 60, `x ${s0.x.toFixed(0)} → ${s1.x.toFixed(0)}`);
-  check('Jump button works while joystick is held (multi-touch)', peak > 60, `peak ${peak.toFixed(0)}`);
+  check('walks left with the arrow keys', s1.x < s0.x - 25 && s1.facing === 'left', `${s0.x.toFixed(0)} → ${s1.x.toFixed(0)}`);
 
-  // walk to sign with joystick, then tap Interact
-  for (let i = 0; i < 20; i++) {
-    const s = await state(page);
-    if (Math.abs(s.x - 420) < 20) break;
-    const dir = s.x < 420 ? 1 : -1;
-    await touch('touchStart', [{ x: 110, y: 290, id: 1 }]);
-    await touch('touchMove', [{ x: 110 + dir * 40, y: 290, id: 1 }]);
-    await sleep(Math.min(250, Math.abs(s.x - 420) * 2));
-    await touch('touchEnd', []);
-    await sleep(150);
-  }
+  await hold(page, ['KeyW', 'KeyD'], 500);
+  const s2 = await state(page);
+  check('walks diagonally (W + D)', s2.x > s1.x + 10 && s2.y < s1.y - 10);
+
+  await place(page, 300, 650, 'right');
+  await hold(page, ['ArrowRight'], 500);
+  const walk = (await state(page)).x - 300;
+  await place(page, 300, 650, 'right');
+  await hold(page, ['ArrowRight', 'ShiftLeft'], 500);
+  const run = (await state(page)).x - 300;
+  check('Shift runs faster than walking', run > walk * 1.3, `walk ${walk.toFixed(0)} px, run ${run.toFixed(0)} px`);
+
+  await place(page, 300, 700, 'down');
+  await hold(page, ['ArrowDown'], 900);
+  check('the stream blocks the player', (await state(page)).y < 736);
+
+  await place(page, 640, 700, 'down');
+  await hold(page, ['ArrowDown'], 2200);
+  check('the bridge crosses the stream', (await state(page)).y > 780);
+
+  await place(page, 1056, 330, 'up');
+  await hold(page, ['ArrowUp'], 1200);
+  check('buildings are solid', (await state(page)).y >= 278);
+
+  await place(page, 224, 300, 'up');
+  await hold(page, ['ArrowUp'], 500);
+  const door = await state(page);
+  await page.keyboard.press('KeyE');
+  await sleep(400);
+  const bubble = await page.evaluate(() => document.querySelector('.speech-bubble.is-shown .speech-title')?.textContent);
+  check('E at the Academy door shows its name', door.nearby === 'language-academy:door' && bubble === 'Language Academy', bubble ?? 'no bubble');
+  await page.screenshot({ path: `${OUT}/pt-desktop-02-door.png` });
+
+  await place(page, 500, 425, 'right');
+  await sleep(200);
+  await page.keyboard.press('KeyE');
+  await sleep(400);
+  const lantern = await page.evaluate(() => document.querySelector('.speech-bubble.is-shown .speech-body')?.textContent ?? '');
+  check('Word Lantern explains how to light it', lantern.includes('Greetings'));
+
+  await page.keyboard.press('KeyQ');
+  await sleep(120);
+  check('Q plays the celebrate emote', (await state(page)).anim === 'celebrate');
+
+  await page.keyboard.press('Escape');
   await sleep(300);
-  const hinted = await page.locator('.touch-btn--interact').evaluate((e) => e.classList.contains('is-hinted'));
-  check('Interact button highlights near the signpost', hinted);
-  await page.locator('.touch-btn--interact').tap();
-  await sleep(500);
-  check('Interact tap opens the speech bubble', await page.locator('.speech-bubble').evaluate((e) => e.classList.contains('is-shown')));
-  await page.screenshot({ path: `${OUT}/mobile-03-signpost.png` });
-  check('no console errors (mobile)', errors.length === 0, errors.join(' | '));
-  await ctx.close();
+  await page.selectOption('.sel-target', 'ja');
+  const chip = await page.evaluate(() => document.querySelector('.hud-learning span').textContent);
+  check('settings switch the target language (menus stay English)', chip.includes('日本語') && chip.startsWith('Learning'), chip);
+  await page.screenshot({ path: `${OUT}/pt-desktop-03-settings.png` });
+  await page.keyboard.press('Escape');
+
+  await place(page, 300, 650, 'left');
+  await sleep(1300);
+  await page.goto(`${BASE}/?test`);
+  await page.waitForFunction(() => window.lq?.scenes?.current?.player, null, { timeout: 20000 });
+  const restored = await state(page);
+  check('save restores position after reload', Math.abs(restored.x - 300) < 4 && Math.abs(restored.y - 650) < 4, `${restored.x},${restored.y}`);
+
+  check('no console errors (desktop)', errors.length === 0, errors.join(' | '));
+  await context.close();
 }
 
-// ───────────────────────── portrait phone → rotate hint
+// ───────────────────────── debug flags
 {
-  const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-  const { page } = await open(ctx, '');
-  check('portrait phone shows the rotate-device overlay', await page.locator('.rotate-overlay').evaluate((e) => getComputedStyle(e).display === 'flex'));
-  await page.screenshot({ path: `${OUT}/mobile-04-portrait-rotate.png` });
-  await ctx.close();
+  const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const { page } = await open(context, '&debug=1');
+  const states = [];
+  for (let k = 1; k <= 6; k++) {
+    await page.keyboard.press(`Digit${k}`);
+    await sleep(100);
+    states.push((await state(page)).anim);
+  }
+  check('debug hotkeys 1–6 preview animation states', new Set(states).size >= 4, states.join(','));
+  await page.screenshot({ path: `${OUT}/pt-desktop-04-debug.png` });
+  await context.close();
+}
+
+// ───────────────────────── landscape phone (touch)
+{
+  const context = await browser.newContext({ viewport: { width: 812, height: 375 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
+  const { page, errors } = await open(context, '&touch=1');
+  check('touch controls are visible', await page.isVisible('.touch-controls'));
+  check('pixel zoom is an integer ≥ 2 on a phone', await page.evaluate(() => window.lq.pixel.zoom >= 2));
+  await page.screenshot({ path: `${OUT}/pt-mobile-01-start.png` });
+
+  const cdp = await context.newCDPSession(page);
+  const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points });
+  await place(page, 584, 640, 'up');
+  const s0 = await state(page);
+  const stick = { x: 110, y: 290, id: 1 };
+  await touch('touchStart', [stick]);
+  await touch('touchMove', [{ ...stick, y: 240 }]);
+  await sleep(250);
+  // second thumb taps Talk while the stick is still held (multi-touch)
+  const btn = await page.locator('.touch-btn--interact').boundingBox();
+  const talk = { x: btn.x + btn.width / 2, y: btn.y + btn.height / 2, id: 2 };
+  await touch('touchStart', [{ ...stick, y: 240 }, talk]);
+  await touch('touchEnd', [{ ...stick, y: 240 }]);
+  await sleep(150);
+  await touch('touchEnd', []);
+  await sleep(300);
+  const s1 = await state(page);
+  check('joystick walks the player up', s1.y < s0.y - 4, `${s0.y.toFixed(0)} → ${s1.y.toFixed(0)}`);
+  const read = await page.evaluate(() => document.querySelector('.speech-bubble.is-shown .speech-title')?.textContent);
+  check('Talk button (second thumb) reads the welcome sign', read === 'Welcome to Hello Town!', read ?? 'no bubble');
+  await page.screenshot({ path: `${OUT}/pt-mobile-02-sign.png` });
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await sleep(300);
+  check('portrait phones get the rotate screen', await page.isVisible('.rotate-overlay'));
+  check('no console errors (mobile)', errors.length === 0, errors.join(' | '));
+  await context.close();
 }
 
 await browser.close();
 const failed = results.filter((r) => !r.ok);
-console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
+console.log(`\n${results.length - failed.length}/${results.length} checks passed.`);
 process.exit(failed.length ? 1 : 0);

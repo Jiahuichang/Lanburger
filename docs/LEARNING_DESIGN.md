@@ -1,5 +1,9 @@
 # Learning Design — Lingua Quest
 
+> ⚠️ **Superseded (2026-11-05):** this document describes the Phase 1 side-scroller (Lingua Quest / Mossbrook).
+> The game is being redesigned as **Lanburger**, a top-down pixel-art RPG. Draft replacement: `LEARNING_SYSTEM.md`.
+> The redesign plan was approved. Keep this document for history only; do not build from it.
+
 ## 1. Languages
 
 | Code    | Language                     | Notes                                               |

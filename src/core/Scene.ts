@@ -1,4 +1,5 @@
 import type { Services } from './Services';
+import type { Facing } from '../character/types';
 
 export interface SceneContext {
   services: Services;
@@ -23,5 +24,5 @@ export interface ReturnPoint {
   mapId: string;
   x: number;
   y: number;
-  facing: 1 | -1;
+  facing: Facing;
 }

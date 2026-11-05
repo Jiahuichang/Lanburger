@@ -1,5 +1,6 @@
-import { LANGUAGES } from '../learning/types';
-import { defaultSave, ENERGY_MAX, ENERGY_REGEN_MS, SAVE_KEY, SAVE_VERSION, type SaveData } from './schema';
+import { FACINGS } from '../character/types';
+import { SUPPORT_LANGUAGES, TARGET_LANGUAGES } from '../learning/types';
+import { defaultSave, ENERGY_MAX, ENERGY_REGEN_MS, SAVE_KEY, SAVE_VERSION, START_MAP, type SaveData } from './schema';
 
 const AUTOSAVE_MS = 5000;
 
@@ -72,8 +73,9 @@ export class SaveSystem {
 export function migrate(raw: unknown): SaveData {
   const base = defaultSave();
   if (!raw || typeof raw !== 'object') return base;
-  const r = raw as Partial<SaveData> & { version?: number };
-  // Future migrations go here, e.g.: if (r.version === 1) { ...; r.version = 2; }
+  let r = raw as Record<string, any>;
+  if ((r.version ?? 1) < 2) r = migrateV1toV2(r);
+
   const merged: SaveData = {
     ...base,
     ...r,
@@ -81,21 +83,57 @@ export function migrate(raw: unknown): SaveData {
     profile: { ...base.profile, ...r.profile },
     location: { ...base.location, ...r.location },
     stats: { ...base.stats, ...r.stats },
+    burger: { ...base.burger, ...r.burger },
     settings: { ...base.settings, ...r.settings },
     inventory: { ...(r.inventory ?? {}) },
     quests: { ...(r.quests ?? {}) },
     vocabulary: { ...(r.vocabulary ?? {}) },
-    unlockedRegions: Array.isArray(r.unlockedRegions) ? r.unlockedRegions : base.unlockedRegions,
+    topicMastery: { ...(r.topicMastery ?? {}) },
+    flags: { ...(r.flags ?? {}) },
+    lanterns: arr(r.lanterns, base.lanterns),
+    unlockedRegions: arr(r.unlockedRegions, base.unlockedRegions),
+    unlockedBuildings: arr(r.unlockedBuildings, base.unlockedBuildings),
+    seenDialogues: arr(r.seenDialogues, base.seenDialogues),
   };
-  // Sanity: languages must be supported and different.
-  const valid = (l: unknown) => (LANGUAGES as readonly unknown[]).includes(l);
-  if (!valid(merged.profile.uiLanguage)) merged.profile.uiLanguage = base.profile.uiLanguage;
-  if (!valid(merged.profile.targetLanguage) || merged.profile.targetLanguage === merged.profile.uiLanguage) {
-    merged.profile.targetLanguage = merged.profile.uiLanguage === 'es' ? 'en' : 'es';
+  const p = merged.profile;
+  if (!(TARGET_LANGUAGES as readonly unknown[]).includes(p.targetLanguage)) p.targetLanguage = base.profile.targetLanguage;
+  if (!(SUPPORT_LANGUAGES as readonly unknown[]).includes(p.supportLanguage)) p.supportLanguage = base.profile.supportLanguage;
+  if (!(FACINGS as readonly unknown[]).includes(merged.location.facing)) merged.location.facing = 'down';
+  if (!Number.isFinite(merged.location.x) || !Number.isFinite(merged.location.y)) {
+    merged.location = { ...base.location, mapId: merged.location.mapId || base.location.mapId };
   }
-  if (!Number.isFinite(merged.location.x) || !Number.isFinite(merged.location.y)) merged.location = base.location;
   return merged;
 }
+
+/**
+ * v1 (Phase 1 side-scroller, Mossbrook) → v2 (top-down Hello Town).
+ * v1 held no learning progress, so only the profile, stats and settings carry over.
+ */
+function migrateV1toV2(v1: Record<string, any>): Record<string, any> {
+  const profile = v1.profile ?? {};
+  const stats = v1.stats ?? {};
+  const target = profile.targetLanguage === 'fr' ? undefined : profile.targetLanguage;
+  return {
+    version: 2,
+    profile: {
+      name: profile.name || 'Lanburger',
+      targetLanguage: target,
+      supportLanguage: profile.uiLanguage === 'zh-TW' ? 'zh-TW' : 'en',
+      createdAt: profile.createdAt,
+    },
+    // side-scroller coordinates mean nothing on the new map: start at the Hello Town spawn
+    location: { mapId: START_MAP, x: NaN, y: NaN, facing: 'down' },
+    stats: { level: stats.level, xp: stats.xp, energy: stats.energy, energyUpdatedAt: stats.energyUpdatedAt, coins: stats.acorns ?? 0 },
+    inventory: v1.inventory,
+    quests: v1.quests,
+    vocabulary: v1.vocabulary,
+    settings: v1.settings,
+    flags: target ? {} : { needsLanguagePick: true },
+  };
+}
+
+const arr = (v: unknown, fallback: string[]): string[] =>
+  Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [...fallback];
 
 /** Energy refills over real time (GAME_DESIGN §6.2). Energy never blocks learning. */
 export function applyEnergyRegen(d: SaveData, now: number): void {

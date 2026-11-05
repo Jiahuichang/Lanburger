@@ -1,5 +1,9 @@
 # Technical Architecture — Lingua Quest
 
+> ⚠️ **Superseded (2026-11-05):** this document describes the Phase 1 side-scroller (Lingua Quest / Mossbrook).
+> The game is being redesigned as **Lanburger**, a top-down pixel-art RPG. Draft replacement: `IMPLEMENTATION_PLAN.md §4 (to be merged after approval)`.
+> The redesign plan was approved. Keep this document for history only; do not build from it.
+
 ## 1. Stack
 
 - **Three.js** (WebGL renderer, `OrthographicCamera` for side-scrolling maps)

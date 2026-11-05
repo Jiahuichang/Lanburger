@@ -4,9 +4,9 @@ const LEFT = ['ArrowLeft', 'KeyA'];
 const RIGHT = ['ArrowRight', 'KeyD'];
 const UP = ['ArrowUp', 'KeyW'];
 const DOWN = ['ArrowDown', 'KeyS'];
-const JUMP = ['Space', 'ArrowUp', 'KeyW'];
-const INTERACT = ['KeyE', 'Enter'];
-const ACTION = ['KeyQ', 'ShiftLeft', 'ShiftRight'];
+const RUN = ['ShiftLeft', 'ShiftRight'];
+const INTERACT = ['KeyE', 'Enter', 'Space'];
+const ACTION = ['KeyQ'];
 const MENU = ['Escape'];
 const PREVENT = new Set(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
 
@@ -21,11 +21,10 @@ export class KeyboardSource implements InputSource {
       if (PREVENT.has(e.code)) e.preventDefault();
       this.held.add(e.code);
       if (e.repeat) return;
-      if (JUMP.includes(e.code)) this.pending.add('jump');
       if (INTERACT.includes(e.code)) this.pending.add('interact');
       if (ACTION.includes(e.code)) this.pending.add('action');
       if (MENU.includes(e.code)) this.pending.add('menu');
-      if (/^Digit[1-7]$/.test(e.code)) this.debugKey = Number(e.code.slice(5));
+      if (/^Digit[1-6]$/.test(e.code)) this.debugKey = Number(e.code.slice(5));
     });
     target.addEventListener('keyup', (e) => this.held.delete(e.code));
     target.addEventListener('blur', () => this.held.clear());
@@ -43,8 +42,8 @@ export class KeyboardSource implements InputSource {
     return (this.any(UP) ? 1 : 0) - (this.any(DOWN) ? 1 : 0);
   }
 
-  jumpHeld(): boolean {
-    return this.any(JUMP);
+  runHeld(): boolean {
+    return this.any(RUN);
   }
 
   edges(): Set<EdgeAction> {

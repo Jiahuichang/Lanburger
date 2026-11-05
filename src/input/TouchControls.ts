@@ -4,7 +4,8 @@ import { t } from '../i18n';
 /**
  * Landscape touch controls (GAME_DESIGN §4):
  *  - left thumb: floating joystick anywhere in the left zone
- *  - right thumb: Jump (large), Interact, Action
+ *  - right thumb: Talk (large, contextual label) and Emote
+ *  - pushing the stick to the rim runs
  * Uses pointer events + pointerId so every thumb is tracked independently (true multi-touch).
  */
 export class TouchControls implements InputSource {
@@ -12,11 +13,11 @@ export class TouchControls implements InputSource {
   private zone: HTMLElement;
   private base: HTMLElement;
   private knob: HTMLElement;
-  private buttons: Record<'jump' | 'interact' | 'action', HTMLButtonElement>;
+  private buttons: Record<'interact' | 'action', HTMLButtonElement>;
   private stickId: number | null = null;
   private origin = { x: 0, y: 0 };
   private vec = { x: 0, y: 0 };
-  private jumpPointers = new Set<number>();
+  private magnitude = 0;
   private pending = new Set<EdgeAction>();
   private radius = 56;
 
@@ -32,14 +33,12 @@ export class TouchControls implements InputSource {
     this.buttons = {
       action: button('touch-btn touch-btn--action', 'action'),
       interact: button('touch-btn touch-btn--interact', 'interact'),
-      jump: button('touch-btn touch-btn--jump', 'jump'),
     };
-    right.append(this.buttons.action, this.buttons.interact, this.buttons.jump);
+    right.append(this.buttons.action, this.buttons.interact);
     this.root.append(this.zone, right);
     parent.append(this.root);
 
     this.bindStick();
-    this.bindButton('jump');
     this.bindButton('interact');
     this.bindButton('action');
     this.relabel();
@@ -58,7 +57,6 @@ export class TouchControls implements InputSource {
   }
 
   relabel(): void {
-    this.buttons.jump.querySelector('.touch-btn-label')!.textContent = t('touch.jump');
     this.buttons.interact.querySelector('.touch-btn-label')!.textContent = t('touch.interact');
     this.buttons.action.querySelector('.touch-btn-label')!.textContent = t('touch.action');
   }
@@ -69,7 +67,7 @@ export class TouchControls implements InputSource {
       if (this.stickId !== null) return;
       e.preventDefault();
       this.stickId = e.pointerId;
-      z.setPointerCapture(e.pointerId);
+      capture(z, e.pointerId);
       const r = z.getBoundingClientRect();
       this.origin = { x: e.clientX, y: e.clientY };
       this.base.style.left = `${e.clientX - r.left}px`;
@@ -85,6 +83,7 @@ export class TouchControls implements InputSource {
       if (e.pointerId !== this.stickId) return;
       this.stickId = null;
       this.vec = { x: 0, y: 0 };
+      this.magnitude = 0;
       this.knob.style.transform = 'translate(-50%, -50%)';
       this.base.classList.remove('is-active');
       this.base.style.left = '';
@@ -103,28 +102,28 @@ export class TouchControls implements InputSource {
       dy = (dy / len) * this.radius;
     }
     this.knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    // radial dead zone keeps diagonals smooth for eight-direction walking
     const dead = 0.18;
     const nx = dx / this.radius;
     const ny = -dy / this.radius;
-    this.vec = {
-      x: Math.abs(nx) < dead ? 0 : nx,
-      y: Math.abs(ny) < dead ? 0 : ny,
-    };
+    const m = Math.hypot(nx, ny);
+    this.magnitude = m;
+    if (m < dead) this.vec = { x: 0, y: 0 };
+    else {
+      const k = Math.min(1, (m - dead) / (1 - dead)) / m;
+      this.vec = { x: nx * k, y: ny * k };
+    }
   }
 
-  private bindButton(name: 'jump' | 'interact' | 'action'): void {
+  private bindButton(name: 'interact' | 'action'): void {
     const b = this.buttons[name];
     b.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      b.setPointerCapture(e.pointerId);
+      capture(b, e.pointerId);
       b.classList.add('is-pressed');
       this.pending.add(name);
-      if (name === 'jump') this.jumpPointers.add(e.pointerId);
     });
-    const end = (e: PointerEvent) => {
-      b.classList.remove('is-pressed');
-      if (name === 'jump') this.jumpPointers.delete(e.pointerId);
-    };
+    const end = () => b.classList.remove('is-pressed');
     b.addEventListener('pointerup', end);
     b.addEventListener('pointercancel', end);
   }
@@ -137,8 +136,8 @@ export class TouchControls implements InputSource {
     return this.vec.y;
   }
 
-  jumpHeld(): boolean {
-    return this.jumpPointers.size > 0;
+  runHeld(): boolean {
+    return this.magnitude > 0.92;
   }
 
   edges(): Set<EdgeAction> {
@@ -150,6 +149,15 @@ export class TouchControls implements InputSource {
   }
 }
 
+/** Pointer capture can throw for pointers the browser no longer tracks; input must keep working. */
+function capture(target: HTMLElement, id: number): void {
+  try {
+    target.setPointerCapture(id);
+  } catch {
+    /* ignore */
+  }
+}
+
 function el(tag: string, cls: string): HTMLElement {
   const e = document.createElement(tag);
   e.className = cls;
@@ -157,7 +165,6 @@ function el(tag: string, cls: string): HTMLElement {
 }
 
 const ICONS: Record<string, string> = {
-  jump: '<svg viewBox="0 0 24 24"><path d="M12 5 L5 13 H9.5 V19 H14.5 V13 H19 Z"/></svg>',
   interact:
     '<svg viewBox="0 0 24 24"><path d="M5 6.5 C5 5 6 4 7.5 4 H16.5 C18 4 19 5 19 6.5 V13 C19 14.5 18 15.5 16.5 15.5 H11 L7 19.5 V15.5 C5.8 15.5 5 14.5 5 13 Z"/></svg>',
   action:
