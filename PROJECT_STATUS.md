@@ -91,6 +91,9 @@ Useful URLs:
 - The R1 screenshots were captured from the Claude app's built-in browser pane. That pane was hidden during testing,
   so frames were stepped from a script and the images are 800-wide JPEGs.
 - The player's position is saved once per second, so closing the tab can lose up to 1 s of walking.
+- GitHub Pages deploy: on Linux, `npm ci` rejects the lockfile, because rolldown lists optional bindings for platforms
+  (s390x, openharmony) that npm records without a version. The workflow falls back to `npm install` and reports the
+  reason as a public annotation. Deploys work (first success 2026-11-05). Re-check after the next Vite/rolldown update.
 - The JS bundle is about 598 kB (156 kB gzipped), mostly Three.js.
 - The `typescript` dependency is 7.0.2 (the native compiler). Pin `typescript@5` if a tool chokes on it.
 - The save key is still `linguaquest.save`, kept on purpose so v1 saves migrate.
