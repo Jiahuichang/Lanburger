@@ -22,6 +22,9 @@ export const icons = {
     '<path class="i-fill-paper" d="M12 3.5 L13.6 5.6 L16.2 5 L16.8 7.6 L19.4 8.4 L18.6 11 L20.3 13 L18.2 14.6 L18.6 17.3 L16 17.6 L14.8 20 L12 18.8 L9.2 20 L8 17.6 L5.4 17.3 L5.8 14.6 L3.7 13 L5.4 11 L4.6 8.4 L7.2 7.6 L7.8 5 L10.4 5.6 Z"/><circle class="i-fill-wood" cx="12" cy="12" r="3.2"/>',
   ),
   energy: wrap('<path class="i-fill-gold" d="M13.5 3 L6 13.5 H11.5 L10.5 21 L18 10.5 H12.5 Z"/>'),
+  speaker: wrap(
+    '<path class="i-fill-paper" d="M4 9.5 H8 L13 5 V19 L8 14.5 H4 Z"/><path class="i-line" d="M16 9 C17.5 10.5 17.5 13.5 16 15 M18.5 6.5 C21.5 9.5 21.5 14.5 18.5 17.5"/>',
+  ),
   close: wrap('<path class="i-line i-thick" d="M7 7 L17 17 M17 7 L7 17"/>'),
   pin: wrap('<path class="i-fill-red" d="M12 21 C8 16 5.5 12.5 5.5 9.5 C5.5 6 8.5 3.5 12 3.5 C15.5 3.5 18.5 6 18.5 9.5 C18.5 12.5 16 16 12 21 Z"/><circle class="i-fill-paper" cx="12" cy="9.5" r="2.5"/>'),
   rotate: wrap(

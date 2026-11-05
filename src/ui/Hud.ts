@@ -47,6 +47,7 @@ export class Hud {
       b.addEventListener('click', () => {
         const key = b.dataset.k as StringKey;
         if (key === 'hud.settings') this.s.ui.settings.open();
+        else if (key === 'hud.learn') this.s.events.emit('ui:learn', undefined);
         else this.s.ui.toast(t('hud.comingSoon', { name: t(key) }));
       });
     });

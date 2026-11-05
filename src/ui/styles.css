@@ -845,6 +845,281 @@ select {
   justify-self: end;
 }
 
+/* ───────────── lesson card */
+
+.lesson-card {
+  width: min(720px, calc(100vw - 24px));
+  max-height: calc(100dvh - 20px);
+  overflow: auto;
+  padding: 12px 18px 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.lesson-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lesson-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--c-title);
+  white-space: nowrap;
+}
+
+.lesson-dots {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lesson-dots i {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--c-panel-deep);
+  border: 1px solid var(--edge-faint);
+}
+
+.lesson-dots i.done {
+  background: var(--c-correct);
+}
+
+.lesson-dots i.now {
+  background: var(--c-title);
+}
+
+.lesson-energy span {
+  color: var(--c-text);
+}
+
+.lesson-step {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  text-align: center;
+}
+
+.lesson-teacher {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.lesson-portrait canvas {
+  width: 96px;
+  height: 96px;
+  image-rendering: pixelated;
+  border-radius: var(--r-card);
+  background: radial-gradient(circle at 50% 35%, var(--shade-0), var(--shade-2));
+  border: 2px solid var(--edge-soft);
+}
+
+.lesson-talk {
+  display: grid;
+  gap: 6px;
+}
+
+.lesson-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-title);
+}
+
+.lesson-text {
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.lesson-note {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text-soft);
+  padding: 8px 12px;
+  border-left: 3px solid var(--c-title);
+  background: var(--panel-glass-soft);
+  border-radius: 0 var(--r-card) var(--r-card) 0;
+}
+
+.lesson-alert {
+  font-size: 15px;
+  line-height: 1.45;
+  padding: 8px 12px;
+  border-left: 3px solid var(--c-energy);
+  background: var(--panel-glass-soft);
+  border-radius: 0 var(--r-card) var(--r-card) 0;
+}
+
+.lesson-kicker {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--c-title);
+}
+
+/* target-language text: large, its own visual zone (LEARNING_SYSTEM §1.5) */
+.target {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+.lesson-target {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 10px 18px;
+  border-radius: var(--r-card);
+  background: var(--c-panel-deep);
+  border: 1px solid var(--edge-faint);
+  min-width: min(360px, 80vw);
+}
+
+.lesson-target-text {
+  font-size: 30px;
+  line-height: 1.25;
+}
+
+.lesson-reading {
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.lesson-listen {
+  cursor: pointer;
+  pointer-events: auto;
+  color: var(--c-text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.lesson-meaning {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.lesson-prompt {
+  font-size: 17px;
+}
+
+.lesson-said {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.lesson-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.lesson-choice {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 52px;
+  padding: 10px 12px 10px 36px;
+  font: inherit;
+  color: var(--c-text);
+  background: var(--panel-glass-soft);
+  border: 2px solid var(--edge-faint);
+  border-radius: var(--r-card);
+  cursor: pointer;
+}
+
+.lesson-choice .dialogue-choice-key {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.lesson-choice-label {
+  font-size: 18px;
+}
+
+.lesson-choice:hover:not(:disabled) {
+  border-color: var(--c-title);
+}
+
+.lesson-choice.is-right {
+  border-color: var(--c-correct);
+  background: var(--c-panel-deep);
+}
+
+.lesson-choice.is-wrong {
+  border-color: var(--c-gentle-wrong);
+  opacity: 0.55;
+}
+
+.lesson-choice:disabled {
+  cursor: default;
+}
+
+.lesson-feedback {
+  width: 100%;
+  display: grid;
+  gap: 4px;
+  padding: 10px 14px;
+  text-align: left;
+  border-radius: var(--r-card);
+  background: var(--panel-glass-soft);
+  border-left: 4px solid var(--c-correct);
+}
+
+.lesson-feedback.is-wrong {
+  border-left-color: var(--c-gentle-wrong);
+}
+
+.lesson-feedback-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--c-correct);
+}
+
+.lesson-feedback.is-wrong .lesson-feedback-title {
+  color: var(--c-gentle-wrong);
+}
+
+.lesson-feedback-text {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.lesson-summary {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+
+.lesson-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  border-radius: var(--r-card);
+  background: var(--panel-glass-soft);
+  font-size: 17px;
+}
+
+.lesson-summary-meaning {
+  color: var(--text-soft);
+  font-size: 15px;
+}
+
+.lesson-next {
+  min-width: 180px;
+}
+
 /* ───────────── rotate overlay (portrait phones) */
 
 .rotate-overlay {
@@ -1043,6 +1318,43 @@ select {
   }
   .dialogue-choices {
     grid-template-columns: 1fr 1fr;
+  }
+  .lesson-card {
+    padding: 8px 12px 10px;
+    gap: 6px;
+  }
+  .lesson-step {
+    gap: 8px;
+  }
+  .lesson-title {
+    font-size: 17px;
+  }
+  .lesson-portrait canvas {
+    width: 64px;
+    height: 64px;
+  }
+  .lesson-text {
+    font-size: 15px;
+  }
+  .lesson-target {
+    padding: 6px 12px;
+  }
+  .lesson-target-text {
+    font-size: 24px;
+  }
+  .lesson-choices {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .lesson-choice {
+    min-height: 44px;
+    padding: 6px 8px 6px 30px;
+  }
+  .lesson-choice-label {
+    font-size: 15px;
+  }
+  .lesson-meaning {
+    font-size: 17px;
   }
 }
 

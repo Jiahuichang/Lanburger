@@ -69,9 +69,10 @@ const graphs: DialogueGraph[] = [
       },
       d: {
         speaker: 'maggie',
-        expression: 'worried',
-        text: "Ah, wait! I'm still writing the lesson cards... Give me a little more time, okay? Come back soon!",
+        expression: 'happy',
+        text: "Wonderful! Let's begin with the friendliest words of all.",
         set: 'met-maggie',
+        action: 'lesson:greetings/greetings-1',
       },
       e: {
         speaker: 'maggie',
@@ -87,8 +88,20 @@ const graphs: DialogueGraph[] = [
     lines: {
       a: {
         speaker: 'maggie',
+        expression: 'happy',
+        text: 'Welcome back! What shall we do today?',
+        choices: [
+          { text: 'Lesson 1: Hello & Goodbye', action: 'lesson:greetings/greetings-1', doneIf: 'lesson:greetings-1' },
+          { text: 'Lesson 2: Introductions', action: 'lesson:greetings/greetings-2', requires: 'lesson:greetings-1', doneIf: 'lesson:greetings-2' },
+          { text: 'Lesson 3: How are you?', action: 'lesson:greetings/greetings-3', requires: 'lesson:greetings-2', doneIf: 'lesson:greetings-3' },
+          { text: 'Free practice (restores energy)', action: 'practice', requires: 'lesson:greetings-1' },
+          { text: 'Just saying hi!', next: 'b' },
+        ],
+      },
+      b: {
+        speaker: 'maggie',
         expression: 'celebrating',
-        text: "The lessons are almost ready! I've been practicing 'hello' in five languages all morning. My cat is very tired of me.",
+        text: "Hi hi! I've been practicing 'hello' in five languages all morning. My cat is very tired of me.",
       },
     },
   },

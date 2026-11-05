@@ -11,6 +11,7 @@ import { DIALOGUES } from '../content/dialogues/hello-town';
 import type { NpcDefinition } from '../npc/types';
 import { NpcBrain, PetBrain, withBodies, type Body } from '../npc/NpcBrain';
 import { DialogueRunner } from '../dialogue/DialogueRunner';
+import { LearningDirector, type Teacher } from '../learning/LearningDirector';
 import type { DialogueGraph } from '../dialogue/types';
 import type { SpeakerInfo } from '../ui/DialogueBox';
 import { paintBalloon } from '../art/painted/props';
@@ -78,6 +79,9 @@ export class WorldScene implements Scene {
   private debugPlayer?: THREE.LineSegments;
   private unsub: (() => void)[] = [];
   private playerCollider!: Collider;
+  private learning!: LearningDirector;
+  /** A lesson, review or conversation is running. */
+  private busy = false;
 
   async enter(ctx: SceneContext): Promise<void> {
     this.s = ctx.services;
@@ -120,7 +124,9 @@ export class WorldScene implements Scene {
     if (this.s.flags.debug) this.buildDebug();
     this.s.pixel.fitCamera(this.camera);
     this.s.pixel.compile(this.scene, this.camera);
+    this.learning = new LearningDirector(this.s);
     this.unsub.push(this.s.events.on('language:changed', () => this.refreshPrompt(true)));
+    this.unsub.push(this.s.events.on('ui:learn', () => void this.study('review')));
     if (!warp) this.s.ui.hud.showHint(true);
   }
 
@@ -241,6 +247,10 @@ export class WorldScene implements Scene {
       void this.talk(it);
       return;
     }
+    if (it.activity === 'practice') {
+      void this.study('practice');
+      return;
+    }
     // signs, locked doors and lanterns use the small speech bubble
     if (this.bubbleFor?.id === it.id) this.closeBubble();
     else {
@@ -251,10 +261,16 @@ export class WorldScene implements Scene {
 
   private async talk(it: Interactable): Promise<void> {
     const graph = this.dialogueFor(it);
-    if (!graph) return;
+    if (!graph || this.busy) return;
+    this.busy = true;
     this.talkingTo = it.id;
     this.player.emote = 'talk';
-    const runner = new DialogueRunner(graph, (flag) => this.s.save.update((d) => void (d.flags[flag] = true)));
+    const flags = this.s.save.data.flags;
+    const runner = new DialogueRunner(
+      graph,
+      (flag) => this.s.save.update((d) => void (d.flags[flag] = true)),
+      (flag) => !!flags[flag],
+    );
     const speakers = await this.speakersFor(graph);
     this.s.save.update((d) => {
       if (!d.seenDialogues.includes(graph.id)) d.seenDialogues.push(graph.id);
@@ -264,6 +280,8 @@ export class WorldScene implements Scene {
     this.player.emote = null;
     // story flags matter: write them now rather than waiting for the autosave
     this.s.save.flush();
+    this.busy = false;
+    for (const action of runner.actions) await this.runAction(action, it);
   }
 
   private dialogueFor(it: Interactable): DialogueGraph | null {
@@ -277,6 +295,63 @@ export class WorldScene implements Scene {
       DIALOGUES[id] ??
       (n.def.greeting ? { id: `${n.def.id}.greeting`, start: 'a', lines: { a: { speaker: n.def.id, text: n.def.greeting } } } : null)
     );
+  }
+
+  /** Actions requested by a conversation: "lesson:<topic>/<lesson>" or "practice". */
+  private async runAction(action: string, it: Interactable): Promise<void> {
+    const teacher = await this.teacherFor(it);
+    if (action === 'practice') {
+      await this.study('practice', teacher);
+      return;
+    }
+    const m = /^lesson:([\w-]+)\/([\w-]+)$/.exec(action);
+    if (!m) return;
+    this.busy = true;
+    this.player.emote = 'learn';
+    const done = await this.learning.runLesson(m[1], m[2], teacher);
+    this.player.emote = null;
+    this.busy = false;
+    if (!done) return;
+    this.player.playEmote('celebrate', EMOTE_SECONDS.celebrate);
+    // the teacher's closing line
+    const finishedTopic = !!this.s.save.data.flags[`topic:${m[1]}`];
+    const npcId = it.id.replace(/^npc:/, '');
+    const closing: DialogueGraph = {
+      id: `${npcId}.after-lesson`,
+      start: 'a',
+      lines: {
+        a: {
+          speaker: npcId,
+          expression: 'celebrating',
+          text: finishedTopic
+            ? "You finished every Greetings lesson! Go tell Mayor Bun. She'll be so proud of you!"
+            : 'Great job, Lanburger! Come back for the next lesson whenever you are ready.',
+        },
+      },
+    };
+    const speakers = await this.speakersFor(closing);
+    this.busy = true;
+    this.talkingTo = it.id;
+    await this.s.ui.dialogue.open(new DialogueRunner(closing), (id) => speakers.get(id) ?? { name: id });
+    this.talkingTo = null;
+    this.busy = false;
+  }
+
+  /** Review (Learn button) or free practice (Practice Corner, restores energy). */
+  private async study(mode: 'review' | 'practice', teacher?: Teacher): Promise<void> {
+    if (this.busy || this.s.ui.dialogue.isOpen || this.s.ui.lesson.isOpen) return;
+    this.busy = true;
+    this.player.emote = 'learn';
+    await this.learning.runReview(mode, teacher ?? (await this.teacherFor()));
+    this.player.emote = null;
+    this.busy = false;
+  }
+
+  /** The NPC teaching (or Maggie by default) as name + portrait for the lesson card. */
+  private async teacherFor(it?: Interactable): Promise<Teacher> {
+    const id = it?.kind === 'npc' ? it.id.replace(/^npc:/, '') : 'maggie';
+    const def = NPCS.find((d) => d.id === id) ?? NPCS.find((d) => d.id === 'maggie');
+    return { name: def?.name ?? 'Maggie', portrait: def?.portrait ? await loadNpcPortrait(def.portrait) : undefined };
   }
 
   /** Names and portraits for everyone who speaks in a graph. */
@@ -416,7 +491,7 @@ export class WorldScene implements Scene {
 
   private refreshPrompt(force: boolean): void {
     const ui = this.s.ui;
-    const it = this.nearby;
+    const it = this.busy || ui.lesson.isOpen ? null : this.nearby;
     const label = it ? promptLabel(it) : null;
     this.s.input.touch.setInteractHint(label);
     if (!it) {
@@ -479,6 +554,8 @@ function promptLabel(it: Interactable): string {
       return t('prompt.look');
     case 'npc':
       return t('prompt.talk');
+    case 'activity':
+      return t('prompt.practice');
     default:
       return t('prompt.read');
   }

@@ -4,6 +4,7 @@ import { Hud } from './Hud';
 import { Prompt } from './Prompt';
 import { SettingsPanel } from './SettingsPanel';
 import { DialogueBox } from './DialogueBox';
+import { LessonPanel } from './LessonPanel';
 import { icons } from './icons';
 
 /**
@@ -20,6 +21,7 @@ export class UiRoot {
   hud!: Hud;
   settings!: SettingsPanel;
   dialogue!: DialogueBox;
+  lesson!: LessonPanel;
   private rotate: HTMLElement;
   private toastEl: HTMLElement;
   private toastTimer = 0;
@@ -67,6 +69,7 @@ export class UiRoot {
     this.hud = new Hud(this.hudLayer, services);
     this.dialogue = new DialogueBox(this.hudLayer, services);
     this.settings = new SettingsPanel(this.modalLayer, services);
+    this.lesson = new LessonPanel(this.modalLayer, services);
   }
 
   /** Re-apply every UI string after a UI-language change. */

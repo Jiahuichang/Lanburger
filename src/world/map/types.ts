@@ -111,7 +111,19 @@ export interface LanternObject {
   y: number;
 }
 
-export type MapObject = SpawnObject | PropObject | BuildingObject | SignObject | LanternObject | WarpObject;
+/** Something the player can use for an activity (e.g. the Practice Corner), drawn as a prop. */
+export interface ActivityObject {
+  type: 'activity';
+  id: string;
+  activity: 'practice';
+  /** English UI title. */
+  title: string;
+  prop: PropKind;
+  x: number;
+  y: number;
+}
+
+export type MapObject = SpawnObject | PropObject | BuildingObject | SignObject | LanternObject | WarpObject | ActivityObject;
 
 export interface MapSource {
   id: string;

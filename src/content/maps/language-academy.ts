@@ -30,7 +30,8 @@ export const languageAcademy: MapSource = {
     { type: 'prop', kind: 'blackboard', x: 10, y: 3 },
     { type: 'prop', kind: 'wallWindow', x: 4.5, y: 2.9 },
     { type: 'prop', kind: 'wallWindow', x: 15.5, y: 2.9 },
-    { type: 'prop', kind: 'bookshelf', x: 2.4, y: 4.0, seed: 1 },
+    // the Practice Corner: free practice that restores energy (PROGRESSION_SYSTEM §3)
+    { type: 'activity', id: 'practice-corner', activity: 'practice', title: 'Practice Corner', prop: 'bookshelf', x: 2.4, y: 4.0 },
     { type: 'prop', kind: 'bookshelf', x: 17.6, y: 4.0, seed: 2 },
     { type: 'prop', kind: 'desk', x: 14.6, y: 5.4 },
     { type: 'prop', kind: 'plant', x: 1.8, y: 12.8 },

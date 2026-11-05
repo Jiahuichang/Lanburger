@@ -1,6 +1,6 @@
 # Implementation Plan — Lanburger 重新設計
 
-> **狀態：已核准（2026-11-05）。R1 已完成。R2 美術垂直切片完成並通過審核，R3 NPC 與對話完成（見 `docs/screenshots/r3/README.md`）；下一階段：R4 學習引擎。** §7 的 8 項決定都採用建議方案。
+> **狀態：已核准（2026-11-05）。R1 已完成。R2 美術垂直切片完成並通過審核，R3 NPC 與對話、R4 學習引擎完成（見 `docs/screenshots/r4/README.md`）；下一階段：R5 任務與成長（垂直切片完成）。** §7 的 8 項決定都採用建議方案。
 > 盤點基準：commit `8465ef7`（Phase 1：可玩的 Mossbrook 橫向捲軸原型），`src/` 共約 4,400 行 TypeScript。
 
 ## 1. 現況盤點（Phase 0 稽核）
@@ -134,7 +134,7 @@ src/
 | **R1 俯視角基礎** ✅（待真機） | 像素渲染管線、JSON 地圖、地磚渲染、Y 軸排序、八方向移動和碰撞、鏡頭、輸入調整、存檔 v2、新色票、灰階版（greybox）Hello Town | 可以在 Hello Town 的灰階版地圖裡走動，撞得到牆和建築 |
 | **R2 美術垂直切片** ✅ | Hello Town 地磚組、廣場和 4 棟建築外觀、樹和櫻花、水、燈光、Lanburger sprite（選定方向）、1 位範例 NPC、新 HUD 外觀 | **美術審核關卡**：跟參考圖並排比較，你確認後才大量產出 |
 | **R3 NPC 與對話** ✅ | NPC 系統（閒晃、面向玩家、頭上圖示）、對話系統（頭像、6 表情、打字效果、選項）、建築進出（門 → 室內）、Language Academy 室內 | 可以跟 NPC 聊天、走進 Academy |
-| **R4 學習引擎** | 學習片段 7 步驟、題型、回饋和重試、Leitner、內容包載入、Greetings 主題（5 種語言）、體力和 Practice Corner | 在 Academy 完成第一堂課 |
+| **R4 學習引擎** ✅ | 學習片段 7 步驟、題型、回饋和重試、Leitner、內容包載入、Greetings 主題（5 種語言）、體力和 Practice Corner | 在 Academy 完成第一堂課 |
 | **R5 任務與成長** | 任務系統和追蹤面板、XP、等級、精通度、Word Lanterns、漢堡成長（Lettuce）、小地圖 | **垂直切片完成**（見 §6） |
 | R6 | 其他 4 個主題、其餘建築室內、支線、朋友 NPC | Hello Town 內容完整 |
 | R7 | 小遊戲框架加 Language Cooking（Burger Rush） | 第一個小遊戲 |

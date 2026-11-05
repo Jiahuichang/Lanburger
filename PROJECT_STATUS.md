@@ -6,8 +6,9 @@ _Last updated: 2026-11-05_
 
 - **Game:** Lanburger, a story-driven, top-down, pixel-art language RPG in **Hello Town**. The plan is
   `docs/IMPLEMENTATION_PLAN.md` (all decisions approved).
-- **Phase:** R1 (top-down foundations), R2 (art vertical slice) and **R3 (NPCs, dialogue, building interiors) are done**.
-  Next: **R4, the learning engine**: Maggie's Greetings lesson in the Language Academy.
+- **Phase:** R1–R3 are done, and **R4 (learning engine) is done**: Maggie's 3 Greetings lessons in 5 languages, with
+  explanations in English or zh-TW, Leitner review, energy and the Practice Corner. Next: **R5, quests and growth**
+  (XP, level, Word Lanterns, toppings, quest tracker). That completes the vertical slice.
 - **Build:** ✅ `npm run build` passes. Every push to `main` deploys to GitHub Pages.
 - **New in R2:**
   - Tile transitions (grass edges, rounded corners, river banks, forest edges, bridge rails), animated water,
@@ -60,13 +61,24 @@ Useful URLs:
 2. Optional, and only with the user's OK because it needs permission to launch Chrome: run `npm run playtest`.
    The script was rewritten for top-down play (about 18 checks) but **has not been run yet**.
 
-## R4: what comes next (see IMPLEMENTATION_PLAN §5, LEARNING_SYSTEM)
+## R5: what comes next (see IMPLEMENTATION_PLAN §5–6, PROGRESSION_SYSTEM)
 
-- Learning encounter flow in 7 steps: situation, explanation, example, exercise, feedback, retry, completion.
-- Question types: choose-meaning, choose-target and dialogue-reply first.
-- Greetings content packs for es, de, ja, zh-TW and en, with explanations in English and zh-TW. Native-speaker review is still needed.
-- Leitner review (the Learn button) and energy: a wrong answer costs 1 energy. Practice Corner in the Academy restores energy for free.
-- Hook: Maggie's "I'm still writing the lesson cards" line becomes the real first lesson.
+- Quest system and tracker panel: Main Quest "Welcome to Hello Town!" (talk to the Mayor, explore 3 places,
+  finish Greetings, report back).
+- XP for answers, lessons and quest steps; level ups (full energy refill, celebration).
+- Topic mastery stars. Lighting the Greetings Word Lantern, which unlocks Burger Bistro. Lanburger earns Lettuce.
+- Minimap, and the Quests, Bag and Collection buttons.
+- Native-speaker review of the Greetings packs (`src/content/learning/greetings/*.ts`, `reviewed: false`).
+
+## R4: what was added
+
+- Content: `src/content/learning/` holds the topic (items, meanings in en and zh-TW, 3 lessons, reply pairs), packs per
+  target language (forms, readings, language notes) and the support-language explanation templates.
+- Engine: `LessonSession` (pure; explain, examples, 3 question types, feedback and retry, reveal after 2 misses, one grade
+  per item per session), `Srs` (Leitner boxes 0–5), and `LearningDirector` (glue to save, energy and UI).
+- UI: `LessonPanel` (target text tagged with its language, Listen via the Web Speech API, keyboard and touch).
+- Maggie's dialogue offers the lessons (choices gated by flags, ✓ when done); the Practice Corner restores 5 energy;
+  the HUD's Learn button opens a review of due items.
 
 ## R3: what was added
 

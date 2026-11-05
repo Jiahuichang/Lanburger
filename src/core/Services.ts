@@ -11,6 +11,8 @@ export interface GameEvents {
   'save:changed': void;
   'language:changed': { target: TargetLanguage; support: SupportLanguage };
   'player:interacted': { targetId: string };
+  /** The HUD's Learn button: start a review session. */
+  'ui:learn': void;
 }
 
 export interface DebugFlags {

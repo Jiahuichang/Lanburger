@@ -21,7 +21,7 @@ export interface Rect {
 
 export interface Interactable {
   id: string;
-  kind: 'sign' | 'door' | 'lantern' | 'npc';
+  kind: 'sign' | 'door' | 'lantern' | 'npc' | 'activity';
   /** Point the player walks up to (map pixels). */
   x: number;
   y: number;
@@ -34,6 +34,8 @@ export interface Interactable {
   topicName?: string;
   /** Doors that lead somewhere. */
   warp?: { to: string; spawn: string };
+  /** Activities (kind 'activity'). */
+  activity?: 'practice';
 }
 
 export interface Warp {
@@ -148,6 +150,13 @@ export class TileMap {
             // a doormat-sized trigger right in front of the door
             this.warps.push({ id: `${o.id}:enter`, rect: { x: px + pw / 2 - 10, y: py - 2, w: 20, h: 8 }, to: o.enter.to, spawn: o.enter.spawn, facing: 'up' });
           }
+          break;
+        }
+        case 'activity': {
+          this.props.push({ type: 'prop', kind: o.prop, x: o.x, y: o.y, px, py });
+          const def = PROP_DEFS[o.prop];
+          if (def.solid) this.solids.push(footRect(px, py, def.solid.w, def.solid.h));
+          this.interactables.push({ id: o.id, kind: 'activity', activity: o.activity, x: px, y: py + 6, radius: 24, promptY: py - 50, title: o.title, body: '' });
           break;
         }
         case 'warp':

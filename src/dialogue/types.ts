@@ -10,6 +10,12 @@ export interface DialogueChoice {
   next?: string;
   /** Save flag set when this choice is picked. */
   set?: string;
+  /** Something the game does after the conversation, e.g. "lesson:greetings/greetings-1" or "practice". */
+  action?: string;
+  /** Only offered once this flag is set. */
+  requires?: string;
+  /** Shown with a check mark once this flag is set. */
+  doneIf?: string;
 }
 
 export interface DialogueLine {
@@ -22,6 +28,7 @@ export interface DialogueLine {
   choices?: DialogueChoice[];
   /** Save flag set when this line is shown. */
   set?: string;
+  action?: string;
 }
 
 export interface DialogueGraph {

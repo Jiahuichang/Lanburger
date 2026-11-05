@@ -120,7 +120,7 @@ export class DialogueBox {
     window.clearInterval(this.typeTimer);
     this.shown = this.full.length;
     this.textEl.textContent = this.full;
-    const choices = this.runner?.line?.choices;
+    const choices = this.runner?.choices;
     if (choices?.length) {
       choices.forEach((c, i) => {
         const b = document.createElement('button');
@@ -152,7 +152,7 @@ export class DialogueBox {
       this.finishTyping();
       return;
     }
-    if (this.runner.line?.choices?.length) {
+    if (this.runner.choices.length) {
       this.pick(this.selected);
       return;
     }
@@ -174,7 +174,7 @@ export class DialogueBox {
     if (!this.runner || e.repeat) return;
     // ignore the very key press that opened the dialogue
     if (performance.now() - this.openedAt < 120) return;
-    const n = this.runner.line?.choices?.length ?? 0;
+    const n = this.runner.choices.length;
     switch (e.code) {
       case 'KeyE':
       case 'Enter':

@@ -1,4 +1,4 @@
-import type { DialogueGraph, DialogueLine } from './types';
+import type { DialogueChoice, DialogueGraph, DialogueLine } from './types';
 
 /**
  * Walks a dialogue graph. Pure logic: the UI asks for the current line and tells the runner when the
@@ -6,10 +6,13 @@ import type { DialogueGraph, DialogueLine } from './types';
  */
 export class DialogueRunner {
   private id: string | null;
+  /** Actions requested by the lines and choices the player went through, in order. */
+  readonly actions: string[] = [];
 
   constructor(
     private graph: DialogueGraph,
     private onFlag: (flag: string) => void = () => {},
+    private has: (flag: string) => boolean = () => false,
   ) {
     this.id = graph.start;
     this.enter();
@@ -17,6 +20,13 @@ export class DialogueRunner {
 
   get line(): DialogueLine | null {
     return this.id ? (this.graph.lines[this.id] ?? null) : null;
+  }
+
+  /** Choices available right now (filtered by `requires`, labelled with ✓ by `doneIf`). */
+  get choices(): DialogueChoice[] {
+    return (this.line?.choices ?? [])
+      .filter((c) => !c.requires || this.has(c.requires))
+      .map((c) => (c.doneIf && this.has(c.doneIf) ? { ...c, text: `${c.text} ✓` } : c));
   }
 
   get done(): boolean {
@@ -32,9 +42,10 @@ export class DialogueRunner {
   }
 
   choose(index: number): void {
-    const c = this.line?.choices?.[index];
+    const c = this.choices[index];
     if (!c) return;
     if (c.set) this.onFlag(c.set);
+    if (c.action) this.actions.push(c.action);
     this.id = c.next ?? null;
     this.enter();
   }
@@ -42,5 +53,6 @@ export class DialogueRunner {
   private enter(): void {
     const l = this.line;
     if (l?.set) this.onFlag(l.set);
+    if (l?.action) this.actions.push(l.action);
   }
 }
