@@ -30,7 +30,8 @@ The older docs (`ART_BIBLE`, `LEARNING_DESIGN`, `MINIGAME_DESIGN`, `ROADMAP`, `T
    CSS variables. Never hard-code a hex value in a scene, mini-game or UI file. Pixel art stays on the grid:
    `NearestFilter`, integer positions, no smooth scaling.
 3. **Characters enter only through manifests.** Lanburger and every NPC are drawn from a `CharacterSpriteManifest`
-   (`src/character/`). Gameplay code never imports a specific character's art.
+   (`src/character/hero.ts`, `src/character/npcs.ts`). Gameplay code never imports a specific character's art.
+   New human NPCs are a `ChibiSpec` character card in `src/art/painted/characters.ts`, not new drawing code.
 4. **Rendering is separate from logic.** Controllers and systems (movement, collision, quests, learning) never
    touch Three.js meshes. Views never decide gameplay.
 5. **No permanent blockers.** Wrong answers may cost energy, but there is always a free way forward
@@ -71,7 +72,8 @@ Vite's `base` comes from `BASE_PATH`; keep asset URLs relative to it (no hard-co
 Never run `npm run playtest` without the user's OK: it launches Chrome, and some of the user's computers don't allow it.
 
 Debug URL flags: `?touch=1` forces touch controls, `?reset=1` clears the save, `?debug=1` shows collision boxes and
-the animation hotkeys (1–6), `?test` exposes `window.lq` for scripts.
+the animation hotkeys (1–6), `?test` exposes `window.lq` for scripts, `?gallery=1` opens the art gallery,
+`?stage=deluxe&toppings=lettuce,cheese` previews Lanburger's growth without touching the save.
 
 ## Quality gate for every phase
 

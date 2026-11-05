@@ -16,6 +16,8 @@ export interface GameEvents {
 export interface DebugFlags {
   debug: boolean;
   forceTouch: boolean;
+  /** `?stage=deluxe&toppings=lettuce,cheese` previews hero growth without touching the save. */
+  heroPreview?: { stage?: string; toppings?: string[] };
 }
 
 /** Everything a scene may use. Passed in, never imported as globals. */

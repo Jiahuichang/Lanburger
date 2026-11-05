@@ -6,6 +6,22 @@ export type Facing = (typeof FACINGS)[number];
 export const ANIM_STATES = ['idle', 'walk', 'talk', 'celebrate', 'incorrect', 'learn'] as const;
 export type AnimState = (typeof ANIM_STATES)[number];
 
+/** The six portrait expressions every speaking character has (GAME_DESIGN §8). */
+export const EXPRESSIONS = ['neutral', 'happy', 'surprised', 'thinking', 'worried', 'celebrating'] as const;
+export type Expression = (typeof EXPRESSIONS)[number];
+
+/** Dialogue / HUD portrait sheet: one square frame per expression, left to right. */
+export interface PortraitManifest {
+  id: string;
+  size: number;
+  expressions: Record<Expression, number>;
+}
+
+export interface LoadedPortrait {
+  manifest: PortraitManifest;
+  sheet: HTMLCanvasElement | HTMLImageElement | ImageBitmap;
+}
+
 /** Which sheet row a facing uses. `flip` mirrors a row horizontally (e.g. left = mirrored right). */
 export type RowRef = number | { row: number; flip: true };
 
@@ -33,6 +49,8 @@ export interface CharacterSpriteManifest {
 export interface LoadedCharacterSprite {
   manifest: CharacterSpriteManifest;
   sheet: HTMLCanvasElement | HTMLImageElement | ImageBitmap;
+  /** Optional paper-doll overlays on the same frame grid (e.g. Lanburger's toppings), drawn in order. */
+  layers?: (HTMLCanvasElement | HTMLImageElement | ImageBitmap)[];
 }
 
 export function facingFromVector(x: number, y: number, fallback: Facing): Facing {

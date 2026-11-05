@@ -21,7 +21,7 @@ export interface Rect {
 
 export interface Interactable {
   id: string;
-  kind: 'sign' | 'door' | 'lantern';
+  kind: 'sign' | 'door' | 'lantern' | 'npc';
   /** Point the player walks up to (map pixels). */
   x: number;
   y: number;

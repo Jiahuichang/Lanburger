@@ -13,6 +13,8 @@ export class ActorView {
   private body: THREE.Mesh;
   private shadow: THREE.Mesh;
   private tex: THREE.Texture;
+  /** Paper-doll overlays (e.g. toppings): same frame grid, drawn just in front of the body. */
+  private layerTex: THREE.Texture[] = [];
   private cols: number;
   private rows: number;
   private state: AnimState = 'idle';
@@ -31,6 +33,14 @@ export class ActorView {
     this.tex.repeat.set(1 / this.cols, 1 / this.rows);
     this.body = new THREE.Mesh(anchoredQuad(m.frameWidth, m.frameHeight, m.anchor.x, m.anchor.y), cutoutMaterial(this.tex));
     this.object.add(this.body);
+    (sprite.layers ?? []).forEach((sheet, i) => {
+      const t = pixelTexture(sheet);
+      t.repeat.copy(this.tex.repeat);
+      this.layerTex.push(t);
+      const mesh = new THREE.Mesh(this.body.geometry, cutoutMaterial(t));
+      mesh.position.z = 0.002 * (i + 1);
+      this.body.add(mesh);
+    });
 
     this.shadow = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1),
@@ -84,10 +94,13 @@ export class ActorView {
     const f = Math.max(0, this.frame);
     this.body.scale.x = flip ? -1 : 1;
     this.tex.offset.set(f / this.cols, 1 - (row + 1) / this.rows);
+    for (const t of this.layerTex) t.offset.copy(this.tex.offset);
   }
 
   dispose(): void {
     this.tex.dispose();
+    this.layerTex.forEach((t) => t.dispose());
+    this.body.children.forEach((c) => ((c as THREE.Mesh).material as THREE.Material).dispose());
     this.body.geometry.dispose();
     (this.body.material as THREE.Material).dispose();
     this.shadow.geometry.dispose();

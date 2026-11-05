@@ -2,7 +2,7 @@ import type { PropKind } from './types';
 
 /**
  * Gameplay facts about each prop kind: its collision box at the foot (art pixels).
- * Purely logical — the look of each prop lives in src/art/greybox/.
+ * Purely logical — the look of each prop lives in src/art/painted/.
  */
 export interface PropDef {
   /** Collision box centered on the foot point, extending `h` pixels up from it. */

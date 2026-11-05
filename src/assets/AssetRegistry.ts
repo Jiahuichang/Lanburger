@@ -8,6 +8,8 @@ export interface SpriteImage {
   w: number;
   h: number;
   anchor: { x: number; y: number };
+  /** Light points relative to the anchor, if the art has any (lit windows). */
+  lights?: { dx: number; dy: number; radius: number }[];
 }
 
 /**
@@ -20,7 +22,7 @@ class AssetRegistry {
   private sprites = new Map<string, SpriteImage>();
   private overrides = new Map<string, HTMLImageElement>();
 
-  sprite(key: string, make: () => { canvas: HTMLCanvasElement; anchor: { x: number; y: number } }): SpriteImage {
+  sprite(key: string, make: () => Pick<SpriteImage, 'canvas' | 'anchor' | 'lights'>): SpriteImage {
     let s = this.sprites.get(key);
     if (!s) {
       const made = make();
@@ -32,6 +34,7 @@ class AssetRegistry {
         w: made.canvas.width,
         h: made.canvas.height,
         anchor: made.anchor,
+        lights: made.lights,
       };
       this.sprites.set(key, s);
     }

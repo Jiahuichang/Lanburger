@@ -6,6 +6,7 @@ import { PixelCanvas, rng } from '../pixel';
 import { palette, ramps, type Ramp } from '../tokens';
 import type { BuildingStyle } from '../../world/map/types';
 import type { Painted } from './props';
+import { drawText, FONT_HEIGHT, textWidth } from '../pixelFont';
 
 type Icon = 'book' | 'burger' | 'basket' | 'flag' | 'emblem' | 'train';
 
@@ -40,7 +41,8 @@ const STYLES: Record<BuildingStyle, Style> = {
   station: { wall: ramps.wood, wallPattern: 'planks', roof: ramps.slate, roofShape: 'gable', wallH: 50, roofH: 34, icon: 'train', door: 'gate' },
 };
 
-export function paintBuilding(style: BuildingStyle, widthPx: number, seed = 0): Painted {
+/** `name` is the English building name painted on the signboard (UI language). */
+export function paintBuilding(style: BuildingStyle, widthPx: number, name: string, seed = 0): Painted {
   const st = STYLES[style];
   const over = 4;
   const extra = st.chimney ? 12 : st.roofShape === 'dome' ? 14 : 4;
@@ -62,7 +64,12 @@ export function paintBuilding(style: BuildingStyle, widthPx: number, seed = 0): 
   const cx = Math.floor(W / 2);
   const winY = wallTop + 14;
   const winXs = widthPx >= 180 ? [x0 + 14, x0 + 44, x1 - 57, x1 - 27] : [x0 + 12, x1 - 25];
-  for (const wx of winXs) window_(c, wx, winY);
+  const lights: { dx: number; dy: number; radius: number }[] = [];
+  for (const wx of winXs) {
+    window_(c, wx, winY);
+    flowerBox(c, wx - 1, winY + 15, seed + wx);
+    lights.push({ dx: wx + 6 - over, dy: winY + 7 - H, radius: 15 });
+  }
 
   // awning over the windows and door
   if (st.awning) awning(c, x0 + 6, x1 - 6, wallTop + 6, st.awning);
@@ -81,10 +88,10 @@ export function paintBuilding(style: BuildingStyle, widthPx: number, seed = 0): 
   }
   if (style === 'townHall') townHallExtras(c, cx, wallTop, st);
   if (style === 'garage') checkers(c, 0, W - 1, wallTop - 4);
-  signboard(c, cx, wallTop + 5, st.icon);
+  signboard(c, cx, wallTop + 6, st.icon, name);
 
   c.outline(palette.ink);
-  return { canvas: c.toCanvas(), anchor: { x: over, y: H } };
+  return { canvas: c.toCanvas(), anchor: { x: over, y: H }, lights };
 }
 
 function paintWall(c: PixelCanvas, x: number, y: number, w: number, h: number, st: Style): void {
@@ -197,12 +204,35 @@ function door(c: PixelCanvas, cx: number, base: number, st: Style): void {
   }
 }
 
-function signboard(c: PixelCanvas, cx: number, y: number, icon: Icon): void {
+/** A wooden signboard straddling the eave: icon + building name in the pixel font. */
+function signboard(c: PixelCanvas, cx: number, y: number, icon: Icon, name: string): void {
   const w = ramps.wood;
-  c.rect(cx - 12, y - 14, 24, 16, w[3]);
-  c.rect(cx - 11, y - 13, 22, 14, w[1]);
-  c.hline(cx - 11, cx + 10, y - 13, w[0]);
-  drawIcon(c, cx, y - 6, icon);
+  const tw = textWidth(name);
+  const bw = tw + 26;
+  const bh = FONT_HEIGHT + 8;
+  const x0 = Math.round(cx - bw / 2);
+  const y0 = y - bh;
+  c.rect(x0 - 1, y0 - 1, bw + 2, bh + 2, w[3]);
+  c.rect(x0, y0, bw, bh, w[1]);
+  c.hline(x0, x0 + bw - 1, y0, w[0]);
+  c.hline(x0, x0 + bw - 1, y0 + bh - 1, w[2]);
+  // pegs holding the board
+  c.set(x0 + 2, y0 + 2, ramps.lamp[2]);
+  c.set(x0 + bw - 3, y0 + 2, ramps.lamp[2]);
+  drawIcon(c, x0 + 11, y0 + Math.floor(bh / 2), icon);
+  drawText(c, name, x0 + 20, y0 + 4, ramps.wall[0], w[3]);
+}
+
+/** Planter under a window, with a few dithered blossoms. */
+function flowerBox(c: PixelCanvas, x: number, y: number, seed: number): void {
+  const r = rng(seed);
+  c.rect(x, y + 2, 15, 3, ramps.wood[2]);
+  c.hline(x, x + 14, y + 2, ramps.wood[1]);
+  for (let i = 0; i < 6; i++) {
+    const fx = x + 1 + Math.floor(r() * 13);
+    c.set(fx, y + 1, ramps.foliage[1]);
+    c.set(fx, y, [ramps.blossom[0], ramps.lamp[1], ramps.royal[0]][i % 3]);
+  }
 }
 
 function drawIcon(c: PixelCanvas, cx: number, cy: number, icon: Icon): void {

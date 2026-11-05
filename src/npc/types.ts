@@ -2,17 +2,23 @@
  * NPC & Quest System contracts (GAME_DESIGN §8, PROGRESSION_SYSTEM §2). Types only until phases R3/R5.
  */
 
+import type { Facing } from '../character/types';
+
 export interface NpcDefinition {
   id: string;
   /** English display name (UI language). */
   name: string;
   mapId: string;
+  /** Foot position in tiles (like map objects). */
   x: number;
   y: number;
   /** Sprite manifest key. */
   sprite: string;
   /** Portrait manifest key (six expressions). */
   portrait?: string;
+  facing?: Facing;
+  /** One English line shown when talked to, until the dialogue system (R3) takes over. */
+  greeting?: string;
   dialogueId: string;
   questHooks?: string[];
 }

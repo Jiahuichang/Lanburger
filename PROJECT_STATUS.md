@@ -4,21 +4,18 @@ _Last updated: 2026-11-05_
 
 ## TL;DR
 
-- **The game was redesigned** (approved 2026-11-05). It is now **Lanburger**, a story-driven, top-down, pixel-art
-  language RPG set in **Hello Town**. Learning languages: en, es, de, ja, zh-TW. The UI is English only. The plan is in
-  `docs/IMPLEMENTATION_PLAN.md`, and all 8 decisions in its §7 use the recommended option.
-- **Phase:** R1 (top-down foundations) is **done, pending a real-phone check**. Next: **R2, the art vertical slice**,
-  which ends at an art review with the user.
-- **Build:** ✅ `npm run build` passes (strict TypeScript + Vite).
-- **Playable now:**
-  - Walk around a greybox Hello Town in eight directions; Shift or pushing the stick to its rim runs.
-  - Collision against buildings, trees, the stream, the forest edge and props, with corner sliding.
-  - Cross the bridge.
-  - Read signs and building doors, and inspect the 5 Word Lanterns (E / Talk). Emote with Q.
-  - Settings: target language and lesson-explanation language.
-  - Save v2 with migration from v1.
-  - Desktop keyboard and landscape touch controls.
-- **Screenshots:** `docs/screenshots/r1/`, with the art review in its README.
+- **Game:** Lanburger, a story-driven, top-down, pixel-art language RPG in **Hello Town**. The plan is
+  `docs/IMPLEMENTATION_PLAN.md` (all decisions approved).
+- **Phase:** R1 (top-down foundations) is done. **R2 (art vertical slice) is done and waiting for the user's art review**
+  (`docs/screenshots/r2/README.md`). Next: **R3, NPCs, dialogue and building interiors**.
+- **Build:** ✅ `npm run build` passes. Every push to `main` deploys to GitHub Pages.
+- **New in R2:**
+  - Tile transitions (grass edges, rounded corners, river banks, forest edges, bridge rails), animated water,
+    English signboards in a pixel font, window light.
+  - Final Lanburger: 4 growth stages and 5 topping layers, walk/talk/celebrate/oops/learn, 6 expression portraits.
+  - Mayor Bun, the first NPC: a shared chibi painter driven by character cards, 6 portraits, a quest balloon, and she
+    faces the player and says a line.
+  - `?gallery=1` art gallery and the `?stage=` / `?toppings=` growth preview.
 
 ## Play online (any phone, no install)
 
@@ -58,16 +55,15 @@ Useful URLs:
 2. Optional, and only with the user's OK because it needs permission to launch Chrome: run `npm run playtest`.
    The script was rewritten for top-down play (about 18 checks) but **has not been run yet**.
 
-## R2: what comes next (see IMPLEMENTATION_PLAN §5)
+## R3: what comes next (see IMPLEMENTATION_PLAN §5)
 
-- A real Hello Town tileset with transition edges between grass, path and plaza, plus animated water.
-- More detailed buildings with text signboards, and window light pools.
-- The final Lanburger sprite: four directions, expressions, and topping layers for burger growth.
-- One sample NPC with six-expression portraits.
-- HUD polish.
-- Then an **art review**: compare side by side with `references/lanburger-town.png` before producing art at scale.
-- **Still missing from the user:** NPC style references and friend photos (they go in `references/private/`, which is
-  git-ignored), plus more village references.
+- Apply the user's R2 art review feedback first.
+- NPC system: idle wandering, facing the player, balloons (`!` quest, `?` turn in, `…` small talk).
+- Dialogue system: portrait panel with six expressions, typewriter text, choices, a dialogue graph format in `src/content/`.
+- Building entry: door → Language Academy interior map → back outside (scene transition, return spawn).
+- Original NPCs: Ms. Sesame (Academy) and one townsperson. Friend NPCs wait for photos and an approved character card.
+- **Still missing from the user:** NPC style references and friend photos (`references/private/`, git-ignored), and
+  more village references.
 
 ## What exists (R1)
 
@@ -75,11 +71,13 @@ Useful URLs:
 | ------ | ----- | ----- |
 | Art tokens | `src/art/tokens.ts`, `cssVars.ts` | Four-step color ramps sampled from the reference, UI palette, `duskTint`, pixel metrics, depth bands |
 | Pixel painter | `src/art/pixel.ts` | Grid-exact `PixelCanvas`: shaded ellipses with Bayer dithering, auto-outline, nearest-filter textures |
-| Greybox art | `src/art/greybox/*` | Tiles, props, buildings and the Lanburger sheet, all painted at runtime from ramps. R2 replaces them via `assets.override()` or new painters |
+| Painted art | `src/art/painted/*` | Tiles and transition overlays, water frames, props, buildings with signboards, Lanburger (stages, toppings, portraits), the chibi NPC painter and character cards. `src/art/pixelFont.ts` is a 5×7 sign font |
 | Rendering | `src/render/*` | `PixelRenderer` (low-res target, integer zoom, sub-pixel camera shift), `TileMapView` (one merged ground mesh plus depth-sorted sprites), `ActorView` (manifest, four facings, flips, foot shadow), `LightLayer` (dusk multiply tint and additive light pools) |
 | World logic | `src/world/*` | `MapSource` data format, `TileMap` (collision grid, solids, interactables, lights, spawns), `TopDownMover` (eight-direction movement, axis-separated collision, corner slide), `WorldScene` |
 | Content | `src/content/maps/*` | Hello Town (80×60 tiles): 6 buildings, plaza and fountain, 5 Word Lanterns, stream and bridge, signs, about 90 props |
-| Character | `src/character/*` | Manifest types (`Facing`, `RowRef`), `hero.ts` (the only place that knows the hero's art) |
+| Character | `src/character/*` | Manifest types (`Facing`, `RowRef`, `Expression`, portraits, paper-doll layers), `hero.ts` and `npcs.ts` (the only places that know character art) |
+| NPCs | `src/content/npcs/*`, `src/npc/types.ts` | NPC definitions (tile position, sprite/portrait key, greeting, quest hooks). Spawned by `WorldScene` |
+| Dev tools | `src/dev/Gallery.ts` | `?gallery=1` art review page |
 | Input | `src/input/*` | Keyboard (WASD/arrows, Shift run, E/Enter/Space talk, Q emote, Esc settings) and touch (floating joystick with radial dead zone, Talk and Emote buttons, multi-touch) |
 | UI | `src/ui/*` | Dark-panel HUD (portrait drawn from the sprite sheet, Lv, Energy/XP), menu buttons (Quests, Bag, Learn and Collection say "coming soon"), location and learning chips, prompt and speech bubble, settings, toast, rotate screen |
 | Save | `src/save/*` | v2 schema (burger, lanterns, topic mastery, flags…). v1 → v2 migration: profile, stats and settings carry over, the position resets to the Hello Town spawn, and French learners are asked to pick again |

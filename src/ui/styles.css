@@ -198,8 +198,8 @@ svg rect {
 }
 
 .hud-portrait {
-  width: 62px;
-  height: 62px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 35%, var(--shade-0), var(--shade-2));
   border: 3px solid var(--c-panel-edge);
@@ -212,8 +212,9 @@ svg rect {
 }
 
 .hud-portrait canvas {
-  width: 48px;
-  height: 45px;
+  width: 64px;
+  height: 64px;
+  margin-top: 6px;
   image-rendering: pixelated;
 }
 
@@ -843,8 +844,9 @@ select {
     height: 50px;
   }
   .hud-portrait canvas {
-    width: 38px;
-    height: 36px;
+    width: 48px;
+    height: 48px;
+    margin-top: 4px;
   }
   .hud-info {
     min-width: 170px;
@@ -881,6 +883,75 @@ select {
   .speech-bubble {
     width: min(320px, 50vw);
   }
+}
+
+/* ───────────── art gallery (?gallery=1, dev review page) */
+
+.gallery {
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  padding: 20px 24px 60px;
+  background: var(--c-void);
+  pointer-events: auto;
+  touch-action: pan-x pan-y;
+  user-select: text;
+}
+
+.gallery-title {
+  margin: 0;
+  color: var(--c-title);
+  font-size: 28px;
+}
+
+.gallery-note {
+  margin: 4px 0 16px;
+  color: var(--text-soft);
+  font-size: 15px;
+}
+
+.gallery-section h2 {
+  margin: 22px 0 10px;
+  font-size: 18px;
+  color: var(--c-title);
+}
+
+.gallery-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.gallery-label {
+  width: 90px;
+  align-self: center;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.gallery-figure {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: var(--shade-2);
+  border-radius: var(--r-card);
+}
+
+.gallery-figure.portrait {
+  background: radial-gradient(circle at 50% 35%, var(--shade-0), var(--shade-2));
+}
+
+.gallery-figure canvas {
+  image-rendering: pixelated;
+}
+
+.gallery-figure figcaption {
+  font-size: 14px;
+  color: var(--text-soft);
 }
 
 @media (prefers-reduced-motion: reduce) {

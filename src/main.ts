@@ -18,7 +18,18 @@ async function boot(): Promise<void> {
   const flags = {
     debug: params.has('debug'),
     forceTouch: params.has('touch'),
+    heroPreview:
+      params.has('stage') || params.has('toppings')
+        ? { stage: params.get('stage') ?? undefined, toppings: params.get('toppings')?.split(',') }
+        : undefined,
   };
+
+  // ?gallery=1 shows the art gallery for reviews instead of the game
+  if (params.has('gallery')) {
+    const { showGallery } = await import('./dev/Gallery');
+    await showGallery(document.getElementById('ui')!);
+    return;
+  }
 
   const save = new SaveSystem();
   if (params.has('reset')) save.reset();

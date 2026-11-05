@@ -2,9 +2,15 @@ import * as THREE from 'three';
 import type { Scene, SceneContext, ReturnPoint } from '../core/Scene';
 import type { Services } from '../core/Services';
 import { depth, palette } from '../art/tokens';
-import { ANIM_STATES, facingFromVector, facingVector } from '../character/types';
-import { loadHeroSprite } from '../character/hero';
+import { ANIM_STATES, facingFromVector, facingVector, type Facing } from '../character/types';
+import { loadHeroPortrait, loadHeroSprite } from '../character/hero';
+import { loadNpcSprite } from '../character/npcs';
 import { MAPS } from '../content/maps';
+import { NPCS } from '../content/npcs';
+import type { NpcDefinition } from '../npc/types';
+import { paintBalloon } from '../art/painted/props';
+import { assets } from '../assets/AssetRegistry';
+import { placeSprite } from '../render/sprites';
 import { t } from '../i18n';
 import { START_MAP } from '../save/schema';
 import { ActorView } from '../render/ActorView';
@@ -26,6 +32,8 @@ export class WorldScene implements Scene {
   private lights!: LightLayer;
   private player!: TopDownMover;
   private view!: ActorView;
+  private npcs: NpcActor[] = [];
+  private time = 0;
   private cam = { x: 0, y: 0 };
   private nearby: Interactable | null = null;
   private bubbleFor: Interactable | null = null;
@@ -40,9 +48,9 @@ export class WorldScene implements Scene {
     const mapId = rp?.mapId ?? save.location.mapId;
     this.map = new TileMap(MAPS[mapId] ?? MAPS[START_MAP]);
 
-    this.mapView = new TileMapView(this.map);
+    this.mapView = new TileMapView(this.map, save.settings.reducedMotion);
     this.scene.add(this.mapView.object);
-    this.lights = new LightLayer(this.map.lights, { w: this.map.widthPx, h: this.map.heightPx }, save.settings.reducedMotion);
+    this.lights = new LightLayer([...this.map.lights, ...this.mapView.artLights], { w: this.map.widthPx, h: this.map.heightPx }, save.settings.reducedMotion);
     this.scene.add(this.lights.object);
     for (const id of save.lanterns) this.setLantern(`lantern-${id}`, true);
 
@@ -54,10 +62,13 @@ export class WorldScene implements Scene {
       this.player.place(sp.x, sp.y, sp.facing);
     }
 
-    const hero = await loadHeroSprite();
+    const preview = this.s.flags.heroPreview;
+    const stage = (['slider', 'classic', 'double', 'deluxe'] as const).find((st) => st === preview?.stage) ?? save.burger.stage;
+    const hero = await loadHeroSprite(stage, preview?.toppings ?? save.burger.equipped);
     this.view = new ActorView(hero);
     this.scene.add(this.view.object);
-    this.s.ui.hud.setPortrait(hero.sheet, hero.manifest.frameWidth);
+    this.s.ui.hud.setPortrait(await loadHeroPortrait(), 'neutral');
+    await this.spawnNpcs();
     this.s.ui.hud.setLocation(this.map.name);
 
     this.cam = { x: this.player.x, y: this.player.y - 16 };
@@ -75,6 +86,7 @@ export class WorldScene implements Scene {
     this.s.ui.prompt.hideBubble();
     this.unsub.forEach((u) => u());
     this.view.dispose();
+    this.npcs.forEach((n) => n.view.dispose());
     this.mapView.dispose();
     this.lights.dispose();
   }
@@ -119,6 +131,16 @@ export class WorldScene implements Scene {
     const y = p.prevY + (p.y - p.prevY) * alpha;
     this.view.play(p.animState, p.facing);
     this.view.update(frameDt, x, y);
+    this.time += frameDt;
+    for (const n of this.npcs) {
+      // turn toward the player when close (R3 replaces this with an NPC brain)
+      const dx = x - n.x;
+      const dy = y - n.y;
+      if (Math.hypot(dx, dy) < 56) n.facing = facingFromVector(dx, dy, n.facing);
+      n.view.play(this.bubbleFor?.id === `npc:${n.def.id}` ? 'talk' : 'idle', n.facing);
+      n.view.update(frameDt, n.x, n.y);
+      n.balloon.position.y = -Math.round(n.y - 50 + Math.round(Math.sin(this.time * 3) * 1.5));
+    }
     if (this.debugPlayer) this.debugPlayer.position.set(Math.round(x), -Math.round(y), depth.debug);
 
     // camera: smooth follow, centered a little above the feet, clamped to the map
@@ -130,6 +152,7 @@ export class WorldScene implements Scene {
     this.cam.y = clampView(this.cam.y, px.viewH, this.map.heightPx);
 
     this.lights.update(frameDt);
+    this.mapView.update(frameDt);
     this.refreshPrompt(false);
     px.render(this.scene, this.camera, this.cam.x, this.cam.y);
   }
@@ -138,6 +161,37 @@ export class WorldScene implements Scene {
     this.s.pixel.fitCamera(this.camera);
     this.cam.x = clampView(this.cam.x, this.s.pixel.viewW, this.map.widthPx);
     this.cam.y = clampView(this.cam.y, this.s.pixel.viewH, this.map.heightPx);
+  }
+
+  /** Place this map's NPCs: a view, a small solid footprint, a Talk interactable and a quest balloon. */
+  private async spawnNpcs(): Promise<void> {
+    const T = this.map.tile;
+    const balloon = assets.sprite('ui.balloon.!', () => paintBalloon('!'));
+    for (const def of NPCS.filter((n) => n.mapId === this.map.id)) {
+      const x = def.x * T;
+      const y = def.y * T;
+      const view = new ActorView(await loadNpcSprite(def.sprite));
+      this.scene.add(view.object);
+      const b = placeSprite(balloon.tex, balloon.w, balloon.h, balloon.anchor, x, y - 50);
+      const mat = b.material as THREE.MeshBasicMaterial;
+      mat.transparent = true;
+      mat.depthTest = false;
+      b.renderOrder = 8;
+      b.visible = (def.questHooks?.length ?? 0) > 0;
+      this.scene.add(b);
+      this.map.solids.push({ x: x - 6, y: y - 6, w: 12, h: 6 });
+      this.map.interactables.push({
+        id: `npc:${def.id}`,
+        kind: 'npc',
+        x,
+        y: y + 2,
+        radius: 22,
+        promptY: y - 62,
+        title: def.name,
+        body: def.greeting ?? '',
+      });
+      this.npcs.push({ def, x, y, facing: def.facing ?? 'down', view, balloon: b });
+    }
   }
 
   /** Lantern state is presentation of save data (PROGRESSION_SYSTEM §7). */
@@ -229,6 +283,8 @@ function promptLabel(it: Interactable): string {
       return t('prompt.door', { name: it.title });
     case 'lantern':
       return t('prompt.look');
+    case 'npc':
+      return t('prompt.talk');
     default:
       return t('prompt.read');
   }
@@ -243,4 +299,13 @@ function bubbleBody(it: Interactable, lit: string[]): string {
 function clampView(c: number, view: number, size: number): number {
   if (size <= view) return size / 2;
   return Math.max(view / 2, Math.min(size - view / 2, c));
+}
+
+interface NpcActor {
+  def: NpcDefinition;
+  x: number;
+  y: number;
+  facing: Facing;
+  view: ActorView;
+  balloon: THREE.Mesh;
 }

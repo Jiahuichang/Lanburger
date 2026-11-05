@@ -3,12 +3,14 @@
  * foot point). Environment outlines use the ramp's deepest step, not black (ART_DIRECTION §1.3).
  */
 import { PixelCanvas, rng } from '../pixel';
-import { ramps, type Ramp } from '../tokens';
+import { palette, ramps, type Ramp } from '../tokens';
 import type { PropKind } from '../../world/map/types';
 
 export interface Painted {
   canvas: HTMLCanvasElement;
   anchor: { x: number; y: number };
+  /** Warm light points relative to the anchor (e.g. lit windows). */
+  lights?: { dx: number; dy: number; radius: number }[];
 }
 
 const done = (c: PixelCanvas, ax: number, ay: number): Painted => ({ canvas: c.toCanvas(), anchor: { x: ax, y: ay } });
@@ -264,4 +266,34 @@ function speckle(c: PixelCanvas, color: string, ramp: Ramp, seed: number, n: num
       n--;
     }
   }
+}
+
+/** Emote balloon shown above an NPC: '!' = has a quest, '?' = ready to turn in, '…' = small talk. */
+export function paintBalloon(mark: '!' | '?' | '…'): Painted {
+  const c = new PixelCanvas(13, 15);
+  const w = ramps.wall;
+  c.rect(1, 1, 11, 10, w[0]);
+  c.hline(2, 10, 0, w[0]);
+  c.hline(2, 10, 11, w[0]);
+  c.vline(0, 2, 9, w[0]);
+  c.vline(12, 2, 9, w[0]);
+  c.rect(5, 12, 3, 1, w[0]);
+  c.set(6, 13, w[0]);
+  c.hline(2, 10, 10, w[1]);
+  const ink = ramps.roofRed[2];
+  if (mark === '!') {
+    c.rect(6, 2, 2, 5, ramps.lamp[2]);
+    c.rect(6, 8, 2, 2, ramps.lamp[2]);
+  } else if (mark === '?') {
+    c.hline(5, 7, 2, ink);
+    c.set(8, 3, ink);
+    c.set(8, 4, ink);
+    c.set(7, 5, ink);
+    c.set(6, 6, ink);
+    c.set(6, 8, ink);
+  } else {
+    for (const x of [3, 6, 9]) c.set(x, 6, ramps.slate[2]);
+  }
+  c.outline(palette.ink);
+  return done(c, 6, 15);
 }

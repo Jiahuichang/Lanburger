@@ -2,6 +2,7 @@ import type { Services } from '../core/Services';
 import { LANGUAGE_NAMES, t, type StringKey } from '../i18n';
 import { ENERGY_MAX, xpToNext } from '../save/schema';
 import { icons } from './icons';
+import type { Expression, LoadedPortrait } from '../character/types';
 
 const MENU: { key: StringKey; icon: keyof typeof icons; cls: string }[] = [
   { key: 'hud.quests', icon: 'quests', cls: 'quests' },
@@ -25,7 +26,7 @@ export class Hud {
     this.el.className = 'hud';
     this.el.innerHTML = `
       <div class="hud-badge">
-        <div class="hud-portrait"><canvas width="32" height="30"></canvas></div>
+        <div class="hud-portrait"><canvas width="64" height="64"></canvas></div>
         <div class="hud-info">
           <div class="hud-name-row"><span class="hud-level"></span><span class="hud-name"></span></div>
           <div class="meter meter--energy" role="meter"><span class="meter-label"></span><div class="meter-track"><div class="meter-fill"></div><span class="meter-text"></span></div></div>
@@ -53,13 +54,16 @@ export class Hud {
     this.refresh();
   }
 
-  /** Draw the hero's face from its sprite sheet (first idle frame), never from a hard-coded image. */
-  setPortrait(sheet: CanvasImageSource, frameWidth: number): void {
+  /** Draw the hero's portrait from its portrait sheet, never from a hard-coded image. */
+  setPortrait(portrait: LoadedPortrait, expression: Expression): void {
     const canvas = this.q<HTMLCanvasElement>('.hud-portrait canvas');
+    const S = portrait.manifest.size;
+    canvas.width = S;
+    canvas.height = S;
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(sheet, 0, 10, frameWidth, 30, 0, 0, frameWidth, 30);
+    ctx.clearRect(0, 0, S, S);
+    ctx.drawImage(portrait.sheet, portrait.manifest.expressions[expression] * S, 0, S, S, 0, 0, S, S);
   }
 
   setLocation(name: string): void {

@@ -13,6 +13,7 @@ export const en = {
   'hint.touch': 'Left thumb: move (push far to run) · Right thumb: talk',
   'prompt.read': 'Read',
   'prompt.look': 'Look',
+  'prompt.talk': 'Talk',
   'prompt.door': '{name}',
   'lantern.dark': 'This Word Lantern is dark. It will glow again once you master {topic}.',
   'lantern.lit': 'The {topic} lantern glows warmly. Well done!',
