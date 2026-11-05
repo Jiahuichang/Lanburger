@@ -21,17 +21,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+          node-version: 24
+      # Install dependencies. If the exact lockfile install fails, report why (as an annotation that is
+      # readable without signing in) and fall back to a normal install so the game still deploys.
+      - name: Install dependencies
+        run: |
+          node --version && npm --version
+          if ! npm ci --no-audit --no-fund > ci.log 2>&1; then
+            cat ci.log
+            echo "::warning title=npm ci failed::$(tail -c 1500 ci.log | tr '\n' ' ')"
+            npm install --no-audit --no-fund 2>&1 | tee install.log || {
+              echo "::error title=npm install failed::$(tail -c 1500 install.log | tr '\n' ' ')"; exit 1; }
+          fi
+      - name: Build
+        run: |
+          npm run build > build.log 2>&1 || {
+            cat build.log
+            echo "::error title=Build failed::$(tail -c 1500 build.log | tr '\n' ' ')"; exit 1; }
+          tail -5 build.log
         env:
           BASE_PATH: /Lanburger/
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
