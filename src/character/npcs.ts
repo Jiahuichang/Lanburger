@@ -1,6 +1,7 @@
 import { EXPRESSIONS, type CharacterSpriteManifest, type LoadedCharacterSprite, type LoadedPortrait, type PortraitManifest } from './types';
 import { CHIBI_FRAME, paintChibiPortraits, paintChibiSheet } from '../art/painted/chibi';
 import { CHARACTER_SPECS } from '../art/painted/characters';
+import { PET_FRAME, paintDogSheet } from '../art/painted/pets';
 
 /**
  * NPC sprite and portrait manifests. Like hero.ts, this is the only place that maps an NPC's
@@ -59,4 +60,33 @@ export async function loadNpcPortrait(key: string): Promise<LoadedPortrait> {
     portraits.set(key, (p = { manifest: m, sheet: paintChibiPortraits(spec, EXPRESSIONS) }));
   }
   return p;
+}
+
+// ───────────────────────── pets
+
+const petRows = (row: number) => ({ down: row, up: row, right: row, left: { row, flip: true as const } });
+
+const PET_MANIFEST: CharacterSpriteManifest = {
+  id: 'pet.dog',
+  image: 'generated:pet.dog',
+  frameWidth: PET_FRAME.w,
+  frameHeight: PET_FRAME.h,
+  anchor: { x: 10, y: 15 },
+  shadowWidth: 14,
+  animations: {
+    idle: { rows: petRows(0), frames: 2, fps: 4, loop: true },
+    walk: { rows: petRows(1), frames: 4, fps: 10, loop: true },
+    talk: { rows: petRows(0), frames: 2, fps: 8, loop: true },
+    celebrate: { rows: petRows(0), frames: 2, fps: 8, loop: true },
+    incorrect: { rows: petRows(0), frames: 2, fps: 2, loop: true },
+    learn: { rows: petRows(0), frames: 2, fps: 4, loop: true },
+  },
+};
+
+let dogSheet: HTMLCanvasElement | null = null;
+
+export async function loadPetSprite(kind: 'dog'): Promise<LoadedCharacterSprite> {
+  void kind;
+  dogSheet ??= paintDogSheet();
+  return { manifest: PET_MANIFEST, sheet: dogSheet };
 }

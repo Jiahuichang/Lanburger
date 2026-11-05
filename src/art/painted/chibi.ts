@@ -38,8 +38,19 @@ export interface ChibiSpec {
   mustache?: boolean;
   /** Simple line tattoos on the arms (and lower legs with shorts). */
   tattoos?: boolean;
-  prop?: 'spinTop' | 'duck' | 'tea' | 'bracelet';
+  /** One or more small props drawn on the sprite. */
+  prop?: Prop | Prop[];
+  hat?: 'beret';
+  /** Hat color (defaults to the trim ramp). */
+  hatColor?: Ramp;
+  /** Little colored pins on a jacket. */
+  pins?: boolean;
+  /** Ripped knees on the trousers. */
+  ripped?: boolean;
 }
+
+export type Prop = 'spinTop' | 'duck' | 'tea' | 'bracelet' | 'headphones' | 'sketchbook' | 'towel' | 'guitar';
+const propsOf = (sp: ChibiSpec): Prop[] => (sp.prop === undefined ? [] : Array.isArray(sp.prop) ? sp.prop : [sp.prop]);
 
 type Dir = 'down' | 'up' | 'right';
 interface Pose {
@@ -82,6 +93,7 @@ function frame(sp: ChibiSpec, p: Pose): PixelCanvas {
       const skinPart = (shorts && y >= top + 2) || sp.bottoms === 'skirt';
       c.hline(lx, lx + 2, y, skinPart ? sp.skin[1] : sp.legs[2]);
       if (skinPart && sp.tattoos && (y + lx) % 3 === 0) c.set(lx + 1, y, sp.skin[3]);
+      if (!skinPart && sp.ripped && y === top + 2) c.set(lx + 1, y, sp.skin[1]);
     }
     const sx = lx - (side ? 0 : 1);
     c.rect(sx, 43 + lifts[i], 4 + (side ? 1 : 0), 3, sp.shoes[2]);
@@ -137,6 +149,11 @@ function frame(sp: ChibiSpec, p: Pose): PixelCanvas {
         c.set(18, ty + 1, sp.trim[0]);
       }
     }
+    if (sp.pins) {
+      c.set(10, ty + 3, ramps.lamp[1]);
+      c.set(21, ty + 5, ramps.blossom[0]);
+      c.set(10, ty + 7, ramps.water[0]);
+    }
     if (sp.sash && !side) {
       for (let i = 0; i < 11; i++) {
         c.set(10 + i, ty + 1 + i, ramps.lamp[2]);
@@ -169,21 +186,31 @@ function frame(sp: ChibiSpec, p: Pose): PixelCanvas {
   }
 
   // props
-  if (!back) prop(c, sp, ty, bottom, side, swing);
+  if (!back) for (const pr of propsOf(sp)) prop(c, pr, ty, bottom, side, swing);
+  else if (propsOf(sp).includes('guitar')) {
+    // guitar carried on the back
+    c.line(9, ty + 1, 21, bottom - 1, ramps.wood[3]);
+    c.ellipse(19, bottom - 3, 4, 3, ramps.bunOrange[2]);
+  }
 
   // head
   const hy = 19 + b;
   c.ellipseEach(15.5, hy, 9.5, 9, (x, y, nx, ny) => c.set(x, y, nx > 0.55 || ny > 0.75 ? sp.skin[2] : sp.skin[1]));
   if (side) c.rect(9, hy, 2, 3, sp.skin[2]); // ear
   hair(c, sp, hy, p.dir);
+  if (sp.hat === 'beret') {
+    const hr = sp.hatColor ?? sp.trim;
+    c.shadedEllipse(side ? 14 : 15, hy - 9, 9, 3.5, hr);
+    c.set(side ? 14 : 15, hy - 13, hr[2]);
+  }
 
   if (!back) face(c, sp, hy, side, !!p.talk);
   c.outline(palette.ink);
   return c;
 }
 
-function prop(c: PixelCanvas, sp: ChibiSpec, ty: number, bottom: number, side: boolean, swing: number): void {
-  switch (sp.prop) {
+function prop(c: PixelCanvas, pr: Prop, ty: number, bottom: number, side: boolean, swing: number): void {
+  switch (pr) {
     case 'spinTop': {
       // a little battle top hanging at the hip
       const x = side ? 18 : 21;
@@ -215,6 +242,35 @@ function prop(c: PixelCanvas, sp: ChibiSpec, ty: number, bottom: number, side: b
     }
     case 'bracelet':
       if (!side) c.hline(7, 8, ty + 7 + swing, ramps.wood[3]);
+      break;
+    case 'headphones':
+      // around the neck
+      c.hline(11, 20, ty, ramps.shade[2]);
+      c.rect(10, ty - 1, 2, 3, ramps.shade[1]);
+      if (!side) c.rect(20, ty - 1, 2, 3, ramps.shade[1]);
+      break;
+    case 'sketchbook': {
+      const x = side ? 17 + swing : 4;
+      const y = ty + 6 + (side ? 0 : swing);
+      c.rect(x, y, 4, 5, ramps.wall[0]);
+      c.vline(x, y, y + 4, ramps.wood[2]);
+      c.set(x + 2, y + 2, ramps.water[1]);
+      break;
+    }
+    case 'towel':
+      // over the left shoulder
+      for (let j = 0; j < 7; j++) c.hline(side ? 12 : 9, side ? 14 : 11, ty + j, j % 3 === 2 ? ramps.water[1] : ramps.wall[0]);
+      break;
+    case 'guitar':
+      if (side) {
+        c.line(10, ty + 2, 15, bottom - 2, ramps.wood[3]);
+        c.ellipse(10, bottom - 3, 4, 3, ramps.bunOrange[2]);
+      } else {
+        c.line(9, ty + 1, 21, bottom - 1, ramps.wood[3]); // strap
+        c.ellipse(19, bottom - 3, 4.5, 3.5, ramps.bunOrange[1]);
+        c.set(19, bottom - 3, ramps.patty[3]);
+        c.line(18, bottom - 4, 12, ty + 3, ramps.wood[2]); // neck
+      }
       break;
   }
 }
@@ -360,6 +416,10 @@ function portrait(sp: ChibiSpec, e: Expression): PixelCanvas {
     c.shadedEllipse(22, 58, 3, 3, ramps.lamp);
   }
   if (sp.outfitStyle === 'hoodie') c.rect(29, 54, 6, 10, sp.trim[1]);
+  const props = propsOf(sp);
+  if (props.includes('towel')) for (let y = 52; y < 64; y++) c.hline(12, 20, y, y % 4 === 3 ? ramps.water[1] : ramps.wall[0]);
+  if (props.includes('guitar')) c.line(14, 52, 46, 64, ramps.wood[3]);
+  if (sp.pins) for (const [x, y, col] of [[14, 58, ramps.lamp[1]], [48, 60, ramps.blossom[0]], [44, 56, ramps.water[0]]] as const) c.rect(x, y, 2, 2, col);
 
   // head
   c.ellipseEach(32, 32 + lift, 19, 18, (x, y, nx, ny) => c.set(x, y, nx > 0.6 || ny > 0.8 ? sp.skin[2] : -nx - ny > 1 ? sp.skin[0] : sp.skin[1]));
@@ -390,6 +450,18 @@ function portrait(sp: ChibiSpec, e: Expression): PixelCanvas {
   }
   for (let i = 0; i < 6; i++) c.set(20 + i, 15 + lift + (i % 3 === 0 ? 1 : 0), h[0]);
   if (bangs === 'center') c.vline(32, 9 + lift, 14 + lift, h[3]);
+  if (sp.hat === 'beret') {
+    const hr = sp.hatColor ?? sp.trim;
+    c.shadedEllipse(30, 12 + lift, 22, 7, hr);
+    c.rect(29, 3 + lift, 2, 3, hr[2]);
+  }
+  if (props.includes('headphones')) {
+    c.ellipseEach(32, 50, 17, 4, (x, y, _nx, ny) => {
+      if (ny > 0.2) c.set(x, y, ramps.shade[2]);
+    });
+    c.rect(12, 46, 5, 7, ramps.shade[1]);
+    c.rect(47, 46, 5, 7, ramps.shade[1]);
+  }
 
   // face
   const ey = 33 + lift;

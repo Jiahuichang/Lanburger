@@ -19,6 +19,8 @@ export interface NpcDefinition {
   facing?: Facing;
   /** One English line shown when talked to, until the dialogue system (R3) takes over. */
   greeting?: string;
+  /** A pet standing beside the NPC (to their right). */
+  pet?: { kind: 'dog'; name: string; line: string };
   dialogueId: string;
   questHooks?: string[];
 }

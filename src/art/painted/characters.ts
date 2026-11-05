@@ -88,4 +88,69 @@ export const CHARACTER_SPECS: Record<string, ChibiSpec> = {
     shoes: ramps.wall,
     prop: 'bracelet',
   },
+
+  // ── Original townsfolk (Town Square, Everyday Talk). Personalities were inspired by public figures the user
+  //    likes, but names and looks are original and deliberately do not resemble anyone (docs/CHARACTERS.md).
+
+  /** Remy — easygoing all-rounder artist: brown hair, green hoodie, headphones, sketchbook. */
+  remy: {
+    skin: ramps.skin,
+    hair: ramps.wood,
+    hairStyle: 'short',
+    bangs: 'full',
+    outfit: ramps.foliage,
+    outfitStyle: 'hoodie',
+    trim: ramps.wall,
+    legs: ramps.denim,
+    shoes: ramps.wall,
+    prop: ['headphones', 'sketchbook'],
+  },
+
+  /** Theo — looks serious, secretly silly stargazer: wavy dark-brown hair, long beige coat, burgundy beret. */
+  theo: {
+    skin: ramps.skin,
+    hair: ramps.patty,
+    hairStyle: 'bob',
+    wavy: true,
+    bangs: 'side',
+    outfit: ramps.wall,
+    outfitStyle: 'coat',
+    trim: ramps.stone,
+    legs: ramps.shade,
+    shoes: ramps.wood,
+    hat: 'beret',
+    hatColor: ramps.roofRed,
+    tall: true,
+  },
+
+  /** Noah — quiet swimmer who opens up to friends: black hair, swim-club jacket, towel, his dog Mochi. */
+  noah: {
+    skin: ramps.skinFair,
+    hair: ramps.hairBlack,
+    hairStyle: 'short',
+    bangs: 'full',
+    outfit: ramps.water,
+    outfitStyle: 'hoodie',
+    trim: ramps.wall,
+    legs: ramps.shade,
+    shoes: ramps.water,
+    prop: 'towel',
+  },
+
+  /** Ash — cool-looking but very gentle street musician: spiky ash-grey hair, pinned denim jacket, ripped jeans, guitar. */
+  ash: {
+    skin: ramps.skinFair,
+    hair: ramps.slate,
+    hairStyle: 'spiky',
+    bangs: 'side',
+    outfit: ramps.denim,
+    outfitStyle: 'overshirt',
+    trim: ramps.shade,
+    legs: ramps.denim,
+    shoes: ramps.shade,
+    pins: true,
+    ripped: true,
+    tall: true,
+    prop: 'guitar',
+  },
 };

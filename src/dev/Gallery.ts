@@ -4,7 +4,7 @@
  */
 import { EXPRESSIONS, type LoadedCharacterSprite, type RowRef } from '../character/types';
 import { loadHeroPortrait, loadHeroSprite, TOPPINGS, type BurgerStage } from '../character/hero';
-import { loadNpcPortrait, loadNpcSprite } from '../character/npcs';
+import { loadNpcPortrait, loadNpcSprite, loadPetSprite } from '../character/npcs';
 import { paintBuilding } from '../art/painted/buildings';
 import { paintProp, paintLantern, paintBalloon } from '../art/painted/props';
 import { paintTileAtlas } from '../art/painted/tiles';
@@ -50,6 +50,10 @@ export async function showGallery(root: HTMLElement): Promise<void> {
     ['Jonas', await loadNpcPortrait('jonas')],
     ['Summy', await loadNpcPortrait('summy')],
     ['Maggie', await loadNpcPortrait('maggie')],
+    ['Remy', await loadNpcPortrait('remy')],
+    ['Theo', await loadNpcPortrait('theo')],
+    ['Noah', await loadNpcPortrait('noah')],
+    ['Ash', await loadNpcPortrait('ash')],
   ] as const) {
     const row = el('div', 'gallery-row');
     row.append(el('div', 'gallery-label', name));
@@ -63,7 +67,7 @@ export async function showGallery(root: HTMLElement): Promise<void> {
   }
 
   const npc = section(page, 'NPCs — Mayor Bun and the friend NPCs');
-  for (const [key, name] of [['mayor-bun', 'Mayor Bun'], ['jeremy', 'Jeremy'], ['jonas', 'Jonas'], ['summy', 'Summy'], ['maggie', 'Maggie']] as const) {
+  for (const [key, name] of [['mayor-bun', 'Mayor Bun'], ['jeremy', 'Jeremy'], ['jonas', 'Jonas'], ['summy', 'Summy'], ['maggie', 'Maggie'], ['remy', 'Remy'], ['theo', 'Theo'], ['noah', 'Noah'], ['ash', 'Ash']] as const) {
     const sprite = await loadNpcSprite(key);
     const nrow = el('div', 'gallery-row');
     nrow.append(el('div', 'gallery-label', name));
@@ -72,6 +76,11 @@ export async function showGallery(root: HTMLElement): Promise<void> {
     nrow.append(anim(sprite, 'talk', 'down', 'talk'));
     npc.append(nrow);
   }
+  const dog = await loadPetSprite('dog');
+  const drow = el('div', 'gallery-row');
+  drow.append(el('div', 'gallery-label', 'Mochi'));
+  drow.append(anim(dog, 'idle', 'right', 'idle'), anim(dog, 'walk', 'right', 'walk'), anim(dog, 'walk', 'left', 'walk left'));
+  npc.append(drow);
 
   const town = section(page, 'Hello Town — buildings');
   const brow = el('div', 'gallery-row');

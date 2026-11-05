@@ -4,7 +4,7 @@ import type { Services } from '../core/Services';
 import { depth, palette } from '../art/tokens';
 import { ANIM_STATES, facingFromVector, facingVector, type Facing } from '../character/types';
 import { loadHeroPortrait, loadHeroSprite } from '../character/hero';
-import { loadNpcSprite } from '../character/npcs';
+import { loadNpcSprite, loadPetSprite } from '../character/npcs';
 import { MAPS } from '../content/maps';
 import { NPCS } from '../content/npcs';
 import type { NpcDefinition } from '../npc/types';
@@ -33,6 +33,7 @@ export class WorldScene implements Scene {
   private player!: TopDownMover;
   private view!: ActorView;
   private npcs: NpcActor[] = [];
+  private pets: { view: ActorView; x: number; y: number; facing: Facing; id: string }[] = [];
   private time = 0;
   private cam = { x: 0, y: 0 };
   private nearby: Interactable | null = null;
@@ -87,6 +88,7 @@ export class WorldScene implements Scene {
     this.unsub.forEach((u) => u());
     this.view.dispose();
     this.npcs.forEach((n) => n.view.dispose());
+    this.pets.forEach((p) => p.view.dispose());
     this.mapView.dispose();
     this.lights.dispose();
   }
@@ -141,6 +143,11 @@ export class WorldScene implements Scene {
       n.view.update(frameDt, n.x, n.y);
       n.balloon.position.y = -Math.round(n.y - 50 + Math.round(Math.sin(this.time * 3) * 1.5));
     }
+    for (const pet of this.pets) {
+      if (Math.hypot(x - pet.x, y - pet.y) < 40) pet.facing = x < pet.x ? 'left' : 'right';
+      pet.view.play(this.bubbleFor?.id === pet.id ? 'talk' : 'idle', pet.facing);
+      pet.view.update(frameDt, pet.x, pet.y);
+    }
     if (this.debugPlayer) this.debugPlayer.position.set(Math.round(x), -Math.round(y), depth.debug);
 
     // camera: smooth follow, centered a little above the feet, clamped to the map
@@ -193,6 +200,24 @@ export class WorldScene implements Scene {
         body: def.greeting ?? '',
       });
       this.npcs.push({ def, x, y, facing: def.facing ?? 'down', view, balloon: b });
+      if (def.pet) {
+        const px = x + 18;
+        const py = y + 2;
+        const pv = new ActorView(await loadPetSprite(def.pet.kind));
+        this.scene.add(pv.object);
+        this.map.solids.push({ x: px - 6, y: py - 4, w: 12, h: 4 });
+        this.map.interactables.push({
+          id: `pet:${def.id}`,
+          kind: 'npc',
+          x: px,
+          y: py + 2,
+          radius: 16,
+          promptY: py - 22,
+          title: def.pet.name,
+          body: def.pet.line,
+        });
+        this.pets.push({ view: pv, x: px, y: py, facing: 'left', id: `pet:${def.id}` });
+      }
     }
   }
 
