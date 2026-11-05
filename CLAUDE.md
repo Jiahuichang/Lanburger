@@ -45,6 +45,16 @@ The older docs (`ART_BIBLE`, `LEARNING_DESIGN`, `MINIGAME_DESIGN`, `ROADMAP`, `T
 10. **Friend photos are private.** They live in `references/private/` (git-ignored) and are never committed or
     shipped. Only the derived pixel sprites and text character cards go into the repo.
 
+## Workflow across computers
+
+The user works from several computers. **GitHub `main` (https://github.com/Jiahuichang/Lanburger) is the source of truth.**
+
+- At the start of a session: `git pull` on `main`.
+- At the end of a work session: update `PROJECT_STATUS.md`, commit, and push to `main`, so the next computer can pull
+  and continue. Never force-push or overwrite remote work. If the remote has moved, pull and merge first.
+- `AGENTS.md` only points other agents to this file. Keep the rules here, not there.
+- The repo is **public**. Never commit friend photos, secrets or anything under `references/private/` (only its README is tracked).
+
 ## Commands
 
 ```bash

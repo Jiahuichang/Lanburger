@@ -43,4 +43,5 @@ Thumbs.db
 .claude/settings.local.json
 
 # Private reference photos (friends' likenesses) — never commit
-references/private/
+references/private/*
+!references/private/README.md

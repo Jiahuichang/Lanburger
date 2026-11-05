@@ -85,7 +85,6 @@ Useful URLs:
 - The R1 screenshots were captured from the Claude app's built-in browser pane. That pane was hidden during testing,
   so frames were stepped from a script and the images are 800-wide JPEGs.
 - The player's position is saved once per second, so closing the tab can lose up to 1 s of walking.
-- `AGENTS.md` (instructions for Codex) was added outside Claude and still describes the old side-scroller. Update or delete it.
 - The JS bundle is about 598 kB (156 kB gzipped), mostly Three.js.
 - The `typescript` dependency is 7.0.2 (the native compiler). Pin `typescript@5` if a tool chokes on it.
 - The save key is still `linguaquest.save`, kept on purpose so v1 saves migrate.
