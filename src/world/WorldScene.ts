@@ -2,26 +2,58 @@ import * as THREE from 'three';
 import type { Scene, SceneContext, ReturnPoint } from '../core/Scene';
 import type { Services } from '../core/Services';
 import { depth, palette } from '../art/tokens';
-import { ANIM_STATES, facingFromVector, facingVector, type Facing } from '../character/types';
+import { ANIM_STATES, facingFromVector, facingVector } from '../character/types';
 import { loadHeroPortrait, loadHeroSprite } from '../character/hero';
-import { loadNpcSprite, loadPetSprite } from '../character/npcs';
+import { loadNpcPortrait, loadNpcSprite, loadPetSprite } from '../character/npcs';
 import { MAPS } from '../content/maps';
 import { NPCS } from '../content/npcs';
+import { DIALOGUES } from '../content/dialogues/hello-town';
 import type { NpcDefinition } from '../npc/types';
+import { NpcBrain, PetBrain, withBodies, type Body } from '../npc/NpcBrain';
+import { DialogueRunner } from '../dialogue/DialogueRunner';
+import type { DialogueGraph } from '../dialogue/types';
+import type { SpeakerInfo } from '../ui/DialogueBox';
 import { paintBalloon } from '../art/painted/props';
-import { assets } from '../assets/AssetRegistry';
+import { assets, type SpriteImage } from '../assets/AssetRegistry';
 import { placeSprite } from '../render/sprites';
 import { t } from '../i18n';
 import { START_MAP } from '../save/schema';
 import { ActorView } from '../render/ActorView';
 import { LightLayer } from '../render/LightLayer';
 import { TileMapView } from '../render/TileMapView';
-import { TileMap, type Interactable } from './map/TileMap';
-import { MOVE, TopDownMover } from './TopDownMover';
+import { TileMap, type Interactable, type Warp } from './map/TileMap';
+import { MOVE, TopDownMover, type Collider } from './TopDownMover';
 
 const EMOTE_SECONDS = { celebrate: 0.6, incorrect: 0.9, talk: 0.8, learn: 1.2 } as const;
+const PLAYER_ID = 'player';
 
-/** Top-down village scene (IMPLEMENTATION_PLAN §4): loads a map by id and lets the player explore it. */
+/** Where to put the player when arriving through a door (scene params). */
+export interface WarpParams {
+  mapId: string;
+  spawn: string;
+}
+
+interface NpcActor {
+  def: NpcDefinition;
+  brain: NpcBrain;
+  view: ActorView;
+  balloon: THREE.Mesh;
+  interactable: Interactable;
+}
+
+interface PetActor {
+  owner: NpcActor;
+  brain: PetBrain;
+  view: ActorView;
+  interactable: Interactable;
+  name: string;
+  line: string;
+}
+
+/**
+ * Top-down map scene (IMPLEMENTATION_PLAN §4): loads a map by id, the player, NPCs with simple brains,
+ * doors between maps, and conversations through the dialogue box.
+ */
 export class WorldScene implements Scene {
   readonly id = 'world';
   private s!: Services;
@@ -33,35 +65,47 @@ export class WorldScene implements Scene {
   private player!: TopDownMover;
   private view!: ActorView;
   private npcs: NpcActor[] = [];
-  private pets: { view: ActorView; x: number; y: number; facing: Facing; id: string }[] = [];
+  private pets: PetActor[] = [];
+  private balloons!: { quest: SpriteImage; chat: SpriteImage };
   private time = 0;
   private cam = { x: 0, y: 0 };
   private nearby: Interactable | null = null;
   private bubbleFor: Interactable | null = null;
+  /** Interactable id of whoever we're talking to in the dialogue box. */
+  private talkingTo: string | null = null;
+  private leaving = false;
   private saveTimer = 0;
   private debugPlayer?: THREE.LineSegments;
   private unsub: (() => void)[] = [];
+  private playerCollider!: Collider;
 
   async enter(ctx: SceneContext): Promise<void> {
     this.s = ctx.services;
     const save = this.s.save.data;
     const rp = ctx.params?.returnPoint as ReturnPoint | undefined;
-    const mapId = rp?.mapId ?? save.location.mapId;
+    const warp = ctx.params?.warp as WarpParams | undefined;
+    const mapId = warp?.mapId ?? rp?.mapId ?? save.location.mapId;
     this.map = new TileMap(MAPS[mapId] ?? MAPS[START_MAP]);
 
     this.mapView = new TileMapView(this.map, save.settings.reducedMotion);
     this.scene.add(this.mapView.object);
-    this.lights = new LightLayer([...this.map.lights, ...this.mapView.artLights], { w: this.map.widthPx, h: this.map.heightPx }, save.settings.reducedMotion);
+    this.lights = new LightLayer(
+      [...this.map.lights, ...this.mapView.artLights],
+      { w: this.map.widthPx, h: this.map.heightPx },
+      save.settings.reducedMotion,
+      this.map.indoor,
+    );
     this.scene.add(this.lights.object);
     for (const id of save.lanterns) this.setLantern(`lantern-${id}`, true);
 
     const saved = save.location.mapId === this.map.id && Number.isFinite(save.location.x) ? save.location : null;
-    const start = rp ?? saved ?? this.map.spawn();
+    const start = warp ? this.map.spawn(warp.spawn) : (rp ?? saved ?? this.map.spawn());
     this.player = new TopDownMover(start.x, start.y, start.facing);
     if (this.map.collides(start.x - MOVE.bodyW / 2, start.y - MOVE.bodyH, MOVE.bodyW, MOVE.bodyH)) {
       const sp = this.map.spawn();
       this.player.place(sp.x, sp.y, sp.facing);
     }
+    this.playerCollider = withBodies(this.map, () => this.bodies(), PLAYER_ID);
 
     const preview = this.s.flags.heroPreview;
     const stage = (['slider', 'classic', 'double', 'deluxe'] as const).find((st) => st === preview?.stage) ?? save.burger.stage;
@@ -77,7 +121,7 @@ export class WorldScene implements Scene {
     this.s.pixel.fitCamera(this.camera);
     this.s.pixel.compile(this.scene, this.camera);
     this.unsub.push(this.s.events.on('language:changed', () => this.refreshPrompt(true)));
-    this.s.ui.hud.showHint(true);
+    if (!warp) this.s.ui.hud.showHint(true);
   }
 
   exit(): void {
@@ -95,30 +139,40 @@ export class WorldScene implements Scene {
 
   update(dt: number): void {
     const input = this.s.input.state;
-    if (input.menuPressed) this.s.ui.settings.toggle();
+    if (input.menuPressed && !this.s.ui.dialogue.isOpen) this.s.ui.settings.toggle();
 
-    if (this.s.flags.debug && input.debugKey) {
-      this.player.playEmote(ANIM_STATES[input.debugKey - 1], 1.5);
-    }
+    if (this.s.flags.debug && input.debugKey) this.player.playEmote(ANIM_STATES[input.debugKey - 1], 1.5);
 
-    this.player.update(dt, { x: input.moveX, y: -input.moveY, run: input.runHeld }, this.map);
+    this.player.update(dt, { x: input.moveX, y: -input.moveY, run: input.runHeld }, this.playerCollider);
     if (input.moveX !== 0 || input.moveY !== 0) this.s.ui.hud.showHint(false);
 
-    this.nearby = this.findNearby();
+    // NPCs and pets
+    const senses = (id: string) => ({ playerX: this.player.x, playerY: this.player.y, talking: this.talkingTo === id || this.bubbleFor?.id === id });
+    for (const n of this.npcs) {
+      n.brain.update(dt, senses(n.interactable.id), withBodies(this.map, () => this.bodies(), n.brain.id));
+      n.interactable.x = n.brain.x;
+      n.interactable.y = n.brain.y + 2;
+      n.interactable.promptY = n.brain.y - 62;
+    }
+    for (const p of this.pets) {
+      p.brain.update(dt, { x: p.owner.brain.x, y: p.owner.brain.y }, senses(p.interactable.id), withBodies(this.map, () => this.bodies(), p.brain.id));
+      p.interactable.x = p.brain.mover.x;
+      p.interactable.y = p.brain.mover.y + 2;
+      p.interactable.promptY = p.brain.mover.y - 22;
+    }
+
+    // interactions
+    this.nearby = this.s.ui.dialogue.isOpen ? null : this.findNearby();
     if (input.interactPressed && this.nearby) {
-      if (this.bubbleFor?.id === this.nearby.id) {
-        this.closeBubble();
-      } else {
-        const it = this.nearby;
-        this.player.facing = facingFromVector(it.x - this.player.x, it.y - this.player.y, this.player.facing);
-        this.player.playEmote('talk', EMOTE_SECONDS.talk);
-        this.bubbleFor = it;
-        this.s.events.emit('player:interacted', { targetId: it.id });
-      }
+      this.interact(this.nearby);
     } else if (input.actionPressed) {
       this.player.playEmote('celebrate', EMOTE_SECONDS.celebrate);
     }
     if (this.bubbleFor && this.nearby?.id !== this.bubbleFor.id) this.closeBubble();
+
+    // doors
+    const w = this.warpUnderPlayer(input.moveX, -input.moveY);
+    if (w) this.useWarp(w.to, w.spawn);
 
     this.saveTimer += dt;
     if (this.saveTimer > 1) {
@@ -134,19 +188,22 @@ export class WorldScene implements Scene {
     this.view.play(p.animState, p.facing);
     this.view.update(frameDt, x, y);
     this.time += frameDt;
+    const flags = this.s.save.data.flags;
     for (const n of this.npcs) {
-      // turn toward the player when close (R3 replaces this with an NPC brain)
-      const dx = x - n.x;
-      const dy = y - n.y;
-      if (Math.hypot(dx, dy) < 56) n.facing = facingFromVector(dx, dy, n.facing);
-      n.view.play(this.bubbleFor?.id === `npc:${n.def.id}` ? 'talk' : 'idle', n.facing);
-      n.view.update(frameDt, n.x, n.y);
-      n.balloon.position.y = -Math.round(n.y - 50 + Math.round(Math.sin(this.time * 3) * 1.5));
+      const m = n.brain.mover;
+      const nx = m.prevX + (m.x - m.prevX) * alpha;
+      const ny = m.prevY + (m.y - m.prevY) * alpha;
+      const talking = this.talkingTo === n.interactable.id;
+      n.view.play(n.brain.animState(talking), n.brain.facing);
+      n.view.update(frameDt, nx, ny);
+      this.setBalloon(n, n.def.questHooks?.length && !(n.def.questDoneFlag && flags[n.def.questDoneFlag]) ? 'quest' : 'chat');
+      n.balloon.visible = !talking;
+      n.balloon.position.set(Math.round(nx), -Math.round(ny - 50 + Math.round(Math.sin(this.time * 3) * 1.5)), n.balloon.position.z);
     }
     for (const pet of this.pets) {
-      if (Math.hypot(x - pet.x, y - pet.y) < 40) pet.facing = x < pet.x ? 'left' : 'right';
-      pet.view.play(this.bubbleFor?.id === pet.id ? 'talk' : 'idle', pet.facing);
-      pet.view.update(frameDt, pet.x, pet.y);
+      const m = pet.brain.mover;
+      pet.view.play(m.moving ? 'walk' : this.talkingTo === pet.interactable.id ? 'talk' : 'idle', m.facing);
+      pet.view.update(frameDt, m.prevX + (m.x - m.prevX) * alpha, m.prevY + (m.y - m.prevY) * alpha);
     }
     if (this.debugPlayer) this.debugPlayer.position.set(Math.round(x), -Math.round(y), depth.debug);
 
@@ -170,55 +227,163 @@ export class WorldScene implements Scene {
     this.cam.y = clampView(this.cam.y, this.s.pixel.viewH, this.map.heightPx);
   }
 
-  /** Place this map's NPCs: a view, a small solid footprint, a Talk interactable and a quest balloon. */
+  // ───────────────────────── interaction
+
+  private interact(it: Interactable): void {
+    this.player.facing = facingFromVector(it.x - this.player.x, it.y - this.player.y, this.player.facing);
+    this.s.events.emit('player:interacted', { targetId: it.id });
+    if (it.warp) {
+      this.useWarp(it.warp.to, it.warp.spawn);
+      return;
+    }
+    if (it.kind === 'npc') {
+      this.closeBubble();
+      void this.talk(it);
+      return;
+    }
+    // signs, locked doors and lanterns use the small speech bubble
+    if (this.bubbleFor?.id === it.id) this.closeBubble();
+    else {
+      this.player.playEmote('talk', EMOTE_SECONDS.talk);
+      this.bubbleFor = it;
+    }
+  }
+
+  private async talk(it: Interactable): Promise<void> {
+    const graph = this.dialogueFor(it);
+    if (!graph) return;
+    this.talkingTo = it.id;
+    this.player.emote = 'talk';
+    const runner = new DialogueRunner(graph, (flag) => this.s.save.update((d) => void (d.flags[flag] = true)));
+    const speakers = await this.speakersFor(graph);
+    this.s.save.update((d) => {
+      if (!d.seenDialogues.includes(graph.id)) d.seenDialogues.push(graph.id);
+    }, false);
+    await this.s.ui.dialogue.open(runner, (id) => speakers.get(id) ?? { name: id });
+    this.talkingTo = null;
+    this.player.emote = null;
+    // story flags matter: write them now rather than waiting for the autosave
+    this.s.save.flush();
+  }
+
+  private dialogueFor(it: Interactable): DialogueGraph | null {
+    const pet = this.pets.find((p) => p.interactable === it);
+    if (pet) return { id: `pet.${pet.name}`, start: 'a', lines: { a: { speaker: pet.interactable.id, text: pet.line } } };
+    const n = this.npcs.find((x) => x.interactable === it);
+    if (!n) return null;
+    const after = n.def.dialogueAfter;
+    const id = after && this.s.save.data.flags[after.flag] ? after.id : n.def.dialogueId;
+    return (
+      DIALOGUES[id] ??
+      (n.def.greeting ? { id: `${n.def.id}.greeting`, start: 'a', lines: { a: { speaker: n.def.id, text: n.def.greeting } } } : null)
+    );
+  }
+
+  /** Names and portraits for everyone who speaks in a graph. */
+  private async speakersFor(graph: DialogueGraph): Promise<Map<string, SpeakerInfo>> {
+    const out = new Map<string, SpeakerInfo>();
+    for (const line of Object.values(graph.lines)) {
+      const id = line.speaker;
+      if (out.has(id)) continue;
+      if (id === 'lanburger') {
+        out.set(id, { name: this.s.save.data.profile.name || 'Lanburger', portrait: await loadHeroPortrait() });
+        continue;
+      }
+      const pet = this.pets.find((p) => p.interactable.id === id);
+      if (pet) {
+        out.set(id, { name: pet.name });
+        continue;
+      }
+      const def = NPCS.find((d) => d.id === id);
+      if (def) out.set(id, { name: def.name, portrait: def.portrait ? await loadNpcPortrait(def.portrait) : undefined });
+    }
+    return out;
+  }
+
+  // ───────────────────────── doors
+
+  /** A warp the player is standing in while pushing toward it (so arriving never re-triggers it). */
+  private warpUnderPlayer(ix: number, iy: number): Warp | null {
+    if (this.leaving || this.s.ui.dialogue.isOpen) return null;
+    const p = this.player;
+    const bx = p.x - MOVE.bodyW / 2;
+    const by = p.y - MOVE.bodyH;
+    for (const w of this.map.warps) {
+      const r = w.rect;
+      const inside = bx < r.x + r.w && bx + MOVE.bodyW > r.x && by < r.y + r.h && by + MOVE.bodyH > r.y;
+      if (!inside) continue;
+      const v = facingVector(w.facing);
+      if (ix * v.x + iy * v.y > 0.5) return w;
+    }
+    return null;
+  }
+
+  private useWarp(to: string, spawn: string): void {
+    if (this.leaving || !MAPS[to]) return;
+    this.leaving = true;
+    this.closeBubble();
+    this.persistLocation();
+    void this.s.scenes.goTo('world', { warp: { mapId: to, spawn } satisfies WarpParams });
+  }
+
+  // ───────────────────────── NPCs
+
+  private bodies(): Body[] {
+    const out: Body[] = [{ id: PLAYER_ID, x: this.player.x - 6, y: this.player.y - 6, w: 12, h: 6 }];
+    for (const n of this.npcs) out.push(n.brain.body());
+    for (const p of this.pets) out.push(p.brain.body());
+    return out;
+  }
+
+  /** Place this map's NPCs: a brain, a view, a Talk interactable and a balloon ('!' quest, '…' small talk). */
   private async spawnNpcs(): Promise<void> {
     const T = this.map.tile;
-    const quest = assets.sprite('ui.balloon.!', () => paintBalloon('!'));
-    const chat = assets.sprite('ui.balloon.…', () => paintBalloon('…'));
+    this.balloons = {
+      quest: assets.sprite('ui.balloon.!', () => paintBalloon('!')),
+      chat: assets.sprite('ui.balloon.…', () => paintBalloon('…')),
+    };
+    let seed = 1;
+    const rand = () => {
+      seed = (seed * 16807) % 2147483647;
+      return seed / 2147483647;
+    };
     for (const def of NPCS.filter((n) => n.mapId === this.map.id)) {
       const x = def.x * T;
       const y = def.y * T;
+      const brain = new NpcBrain(`npc:${def.id}`, { x, y }, def.facing ?? 'down', (def.wander ?? 0) * T, rand);
       const view = new ActorView(await loadNpcSprite(def.sprite));
       this.scene.add(view.object);
-      // '!' = has a quest, '…' = small talk (GAME_DESIGN §8)
-      const balloon = def.questHooks?.length ? quest : chat;
-      const b = placeSprite(balloon.tex, balloon.w, balloon.h, balloon.anchor, x, y - 50);
-      const mat = b.material as THREE.MeshBasicMaterial;
-      mat.transparent = true;
-      mat.depthTest = false;
-      b.renderOrder = 8;
+      const b = this.balloonMesh(this.balloons.chat);
       this.scene.add(b);
-      this.map.solids.push({ x: x - 6, y: y - 6, w: 12, h: 6 });
-      this.map.interactables.push({
-        id: `npc:${def.id}`,
-        kind: 'npc',
-        x,
-        y: y + 2,
-        radius: 22,
-        promptY: y - 62,
-        title: def.name,
-        body: def.greeting ?? '',
-      });
-      this.npcs.push({ def, x, y, facing: def.facing ?? 'down', view, balloon: b });
+      const interactable: Interactable = { id: `npc:${def.id}`, kind: 'npc', x, y: y + 2, radius: 22, promptY: y - 62, title: def.name, body: '' };
+      this.map.interactables.push(interactable);
+      const actor: NpcActor = { def, brain, view, balloon: b, interactable };
+      this.npcs.push(actor);
+
       if (def.pet) {
-        const px = x + 18;
-        const py = y + 2;
         const pv = new ActorView(await loadPetSprite(def.pet.kind));
         this.scene.add(pv.object);
-        this.map.solids.push({ x: px - 6, y: py - 4, w: 12, h: 4 });
-        this.map.interactables.push({
-          id: `pet:${def.id}`,
-          kind: 'npc',
-          x: px,
-          y: py + 2,
-          radius: 16,
-          promptY: py - 22,
-          title: def.pet.name,
-          body: def.pet.line,
-        });
-        this.pets.push({ view: pv, x: px, y: py, facing: 'left', id: `pet:${def.id}` });
+        const pi: Interactable = { id: `pet:${def.id}`, kind: 'npc', x: x + 18, y: y + 4, radius: 16, promptY: y - 20, title: def.pet.name, body: '' };
+        this.map.interactables.push(pi);
+        this.pets.push({ owner: actor, brain: new PetBrain(`pet:${def.id}`, x + 18, y + 2), view: pv, interactable: pi, name: def.pet.name, line: def.pet.line });
       }
     }
+  }
+
+  private balloonMesh(img: SpriteImage): THREE.Mesh {
+    const b = placeSprite(img.tex, img.w, img.h, img.anchor, 0, 0);
+    const mat = b.material as THREE.MeshBasicMaterial;
+    mat.transparent = true;
+    mat.depthTest = false;
+    b.renderOrder = 8;
+    b.userData.kind = 'chat';
+    return b;
+  }
+
+  private setBalloon(n: NpcActor, kind: 'quest' | 'chat'): void {
+    if (n.balloon.userData.kind === kind) return;
+    n.balloon.userData.kind = kind;
+    (n.balloon.material as THREE.MeshBasicMaterial).map = this.balloons[kind].tex;
   }
 
   /** Lantern state is presentation of save data (PROGRESSION_SYSTEM §7). */
@@ -285,6 +450,7 @@ export class WorldScene implements Scene {
       for (let c = 0; c < this.map.cols; c++) if (this.map.isBlockedTile(c, r)) rect(c * T, r * T, T, T);
     }
     for (const s of this.map.solids) rect(s.x, s.y, s.w, s.h);
+    for (const w of this.map.warps) rect(w.rect.x, w.rect.y, w.rect.w, w.rect.h);
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
     const lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: palette.badge, depthTest: false }));
@@ -305,6 +471,7 @@ export class WorldScene implements Scene {
 }
 
 function promptLabel(it: Interactable): string {
+  if (it.warp) return t('prompt.enter');
   switch (it.kind) {
     case 'door':
       return t('prompt.door', { name: it.title });
@@ -326,13 +493,4 @@ function bubbleBody(it: Interactable, lit: string[]): string {
 function clampView(c: number, view: number, size: number): number {
   if (size <= view) return size / 2;
   return Math.max(view / 2, Math.min(size - view / 2, c));
-}
-
-interface NpcActor {
-  def: NpcDefinition;
-  x: number;
-  y: number;
-  facing: Facing;
-  view: ActorView;
-  balloon: THREE.Mesh;
 }

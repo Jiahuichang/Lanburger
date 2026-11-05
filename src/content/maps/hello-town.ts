@@ -67,6 +67,7 @@ export const helloTown: MapSource = {
   ],
   objects: [
     { type: 'spawn', id: 'start', x: 40, y: 39, facing: 'up' },
+    { type: 'spawn', id: 'academy-door', x: 14, y: 18.7, facing: 'down' },
 
     {
       type: 'building', id: 'town-hall', style: 'townHall', name: 'Town Hall', x: 33, y: 13, w: 14, depth: 4,
@@ -74,7 +75,8 @@ export const helloTown: MapSource = {
     },
     {
       type: 'building', id: 'language-academy', style: 'academy', name: 'Language Academy', x: 8, y: 17, w: 12, depth: 4,
-      blurb: 'Greetings & introductions. Maggie is preparing the first class.',
+      blurb: 'Greetings & introductions. Come on in!',
+      enter: { to: 'language-academy', spawn: 'entrance' },
     },
     {
       type: 'building', id: 'burger-bistro', style: 'bistro', name: 'Burger Bistro', x: 60, y: 17, w: 12, depth: 4,

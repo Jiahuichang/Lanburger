@@ -117,6 +117,39 @@ const PAINTERS: Record<GroundKind, (c: PixelCanvas, v: number) => void> = {
       for (let x = 0; x < T; x++) c.set(x, y, step === 0 ? s[0] : step === 3 ? s[3] : s[1]);
     }
   },
+
+  // ── interiors (R3)
+
+  floor(c, v) {
+    // warm wooden planks, staggered seams
+    const w = ramps.wood;
+    for (let y = 0; y < T; y++) {
+      const plank = Math.floor(y / 4);
+      const seam = ((plank * 7 + v * 3) % 16) | 0;
+      for (let x = 0; x < T; x++) {
+        // lighter boards than outdoor wood: honey base, soft seams
+        let col = y % 4 === 3 ? w[1] : y % 4 === 0 ? ramps.stone[0] : w[0];
+        if (x === seam && y % 4 !== 3) col = w[1];
+        c.set(x, y, col);
+      }
+    }
+    c.set((v * 5 + 3) % T, 1, w[1]);
+  },
+
+  wall(c, v) {
+    // plaster with a soft vertical wallpaper stripe
+    const p = ramps.wall;
+    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) c.set(x, y, (x + v) % 8 === 0 ? p[2] : (x + v) % 8 === 1 ? p[0] : p[1]);
+  },
+
+  void(c) {
+    c.rect(0, 0, T, T, ramps.shade[3]);
+  },
+
+  rug(c) {
+    const r = ramps.royal;
+    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) c.set(x, y, (x + y) % 8 === 0 || (x - y + 16) % 8 === 0 ? r[0] : r[1]);
+  },
 };
 
 /** Running-bond cobbles; `bw`×`bh` stones with mortar on the lower/right edge. Tileable when T % bw === 0. */
@@ -178,6 +211,15 @@ export function edgeSignature(kind: GroundKind, n: GroundKind[], variant: number
       break;
     case 'stairs':
       sig = side((k) => k !== 'stairs' && k !== 'path');
+      break;
+    case 'floor':
+    case 'rug':
+      // shadow under the wall; rugs also get a woven border against the floor
+      sig = side((k) => k === 'wall' || k === 'void' || (kind === 'rug' && k === 'floor'));
+      break;
+    case 'wall':
+      // wainscot where the wall meets the floor, crown molding at the top
+      sig = side((k) => k !== 'wall');
       break;
     default:
       return null;
@@ -283,6 +325,45 @@ export function paintEdge(signature: string): PixelCanvas {
           put(i, a, 0, w[3]);
           put(i, a, 1, a % 8 < 2 ? w[3] : w[0]);
           put(i, a, 2, a % 8 < 2 ? w[2] : w[3]);
+        }
+      }
+      break;
+    }
+    case 'floor':
+    case 'rug': {
+      for (let i = 0; i < 4; i++) {
+        if (!on(i)) continue;
+        for (let a = 0; a < T; a++) {
+          if (kind === 'rug') {
+            put(i, a, 0, ramps.lamp[2]);
+            put(i, a, 1, a % 4 < 2 ? ramps.lamp[1] : ramps.royal[2]);
+          } else if (i === 0) {
+            // soft shadow cast by the wall above
+            put(i, a, 0, ramps.wood[3]);
+            put(i, a, 1, ramps.wood[2]);
+            if (a % 2 === 0) put(i, a, 2, ramps.wood[2]);
+          } else {
+            put(i, a, 0, ramps.wood[3]);
+          }
+        }
+      }
+      break;
+    }
+    case 'wall': {
+      const w = ramps.wood;
+      for (let i = 0; i < 4; i++) {
+        if (!on(i)) continue;
+        for (let a = 0; a < T; a++) {
+          if (i === 2) {
+            // wainscot panel and baseboard
+            for (let d = 0; d < 7; d++) put(i, a, d, d === 0 ? w[3] : d === 6 ? w[0] : a % 8 === 0 ? w[2] : w[1]);
+          } else if (i === 0) {
+            put(i, a, 0, w[3]);
+            put(i, a, 1, w[1]);
+            put(i, a, 2, w[2]);
+          } else {
+            put(i, a, 0, ramps.shade[2]);
+          }
         }
       }
       break;

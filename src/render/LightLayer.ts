@@ -14,12 +14,12 @@ export class LightLayer {
   private meshes: { mesh: THREE.Mesh; phase: number; base: number }[] = [];
   private time = 0;
 
-  constructor(lights: LightPoint[], size: { w: number; h: number }, private reducedMotion: boolean) {
+  constructor(lights: LightPoint[], size: { w: number; h: number }, private reducedMotion: boolean, indoor = false) {
     // dusk: multiply the whole map toward a cool violet, then add warm light pools on top
     const tint = new THREE.Mesh(
       new THREE.PlaneGeometry(size.w, size.h),
       new THREE.MeshBasicMaterial({
-        color: palette.duskTint,
+        color: indoor ? palette.indoorTint : palette.duskTint,
         blending: THREE.MultiplyBlending,
         premultipliedAlpha: true,
         transparent: true,

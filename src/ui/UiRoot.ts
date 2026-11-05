@@ -3,6 +3,7 @@ import { t } from '../i18n';
 import { Hud } from './Hud';
 import { Prompt } from './Prompt';
 import { SettingsPanel } from './SettingsPanel';
+import { DialogueBox } from './DialogueBox';
 import { icons } from './icons';
 
 /**
@@ -18,6 +19,7 @@ export class UiRoot {
   readonly prompt: Prompt;
   hud!: Hud;
   settings!: SettingsPanel;
+  dialogue!: DialogueBox;
   private rotate: HTMLElement;
   private toastEl: HTMLElement;
   private toastTimer = 0;
@@ -63,6 +65,7 @@ export class UiRoot {
   bind(services: Services): void {
     this.services = services;
     this.hud = new Hud(this.hudLayer, services);
+    this.dialogue = new DialogueBox(this.hudLayer, services);
     this.settings = new SettingsPanel(this.modalLayer, services);
   }
 

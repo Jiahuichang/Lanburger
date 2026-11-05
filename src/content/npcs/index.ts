@@ -17,6 +17,8 @@ export const NPCS: NpcDefinition[] = [
     dialogueId: 'mayor-bun.welcome',
     questHooks: ['welcome-to-hello-town'],
     greeting: "Welcome to Hello Town, Lanburger! Our Word Lanterns have gone dark... Look around, and come back to me soon.",
+    dialogueAfter: { flag: 'met-mayor', id: 'mayor-bun.after' },
+    questDoneFlag: 'met-mayor',
   },
   {
     id: 'jeremy',
@@ -29,6 +31,7 @@ export const NPCS: NpcDefinition[] = [
     portrait: 'jeremy',
     dialogueId: 'jeremy.smalltalk',
     greeting: "...Oh. Hi. The karts aren't ready yet. I'm tuning them. ...Do you surf?",
+    wander: 1.2,
   },
   {
     id: 'jonas',
@@ -41,6 +44,7 @@ export const NPCS: NpcDefinition[] = [
     portrait: 'jonas',
     dialogueId: 'jonas.smalltalk',
     greeting: "Hallo! No trains until the lanterns shine again. Technically, it's a power problem. ...Get it? Power? Okay.",
+    wander: 1.5,
   },
   {
     id: 'summy',
@@ -53,20 +57,24 @@ export const NPCS: NpcDefinition[] = [
     portrait: 'summy',
     dialogueId: 'summy.smalltalk',
     greeting: 'Hi hi! The General Store opens soon. I am sorting the teacups. Aren\'t they so cute?',
+    wander: 1,
   },
 
   {
     id: 'maggie',
     name: 'Maggie',
-    mapId: 'hello-town',
-    x: 16.6,
-    y: 18.9,
+    mapId: 'language-academy',
+    x: 11.4,
+    y: 4.9,
     facing: 'down',
     sprite: 'maggie',
     portrait: 'maggie',
     dialogueId: 'maggie.welcome',
     questHooks: ['greetings-lesson'],
     greeting: "Hi hi, welcome! I'm Maggie, the teacher here! Our first class is almost ready. Oh, I'm so excited I could talk all day... and I probably will!",
+    dialogueAfter: { flag: 'met-maggie', id: 'maggie.after' },
+    questDoneFlag: 'met-maggie',
+    wander: 1,
   },
 
   // Town Square regulars (Everyday Talk)
@@ -93,6 +101,7 @@ export const NPCS: NpcDefinition[] = [
     portrait: 'theo',
     dialogueId: 'theo.smalltalk',
     greeting: "...I'm not angry. This is just my face. Did you know stars blink in secret code? I made that up.",
+    wander: 1.5,
   },
   {
     id: 'noah',
@@ -106,6 +115,7 @@ export const NPCS: NpcDefinition[] = [
     dialogueId: 'noah.smalltalk',
     greeting: '...Hi. This is Mochi. She says hello. I mostly just swim.',
     pet: { kind: 'dog', name: 'Mochi', line: 'Woof! (Mochi wags her fluffy tail.)' },
+    wander: 1.5,
   },
   {
     id: 'ash',

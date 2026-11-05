@@ -6,8 +6,8 @@ _Last updated: 2026-11-05_
 
 - **Game:** Lanburger, a story-driven, top-down, pixel-art language RPG in **Hello Town**. The plan is
   `docs/IMPLEMENTATION_PLAN.md` (all decisions approved).
-- **Phase:** R1 (top-down foundations) is done. **R2 (art vertical slice) is done and waiting for the user's art review**
-  (`docs/screenshots/r2/README.md`). Next: **R3, NPCs, dialogue and building interiors**.
+- **Phase:** R1 (top-down foundations), R2 (art vertical slice) and **R3 (NPCs, dialogue, building interiors) are done**.
+  Next: **R4, the learning engine**: Maggie's Greetings lesson in the Language Academy.
 - **Build:** ✅ `npm run build` passes. Every push to `main` deploys to GitHub Pages.
 - **New in R2:**
   - Tile transitions (grass edges, rounded corners, river banks, forest edges, bridge rails), animated water,
@@ -60,15 +60,23 @@ Useful URLs:
 2. Optional, and only with the user's OK because it needs permission to launch Chrome: run `npm run playtest`.
    The script was rewritten for top-down play (about 18 checks) but **has not been run yet**.
 
-## R3: what comes next (see IMPLEMENTATION_PLAN §5)
+## R4: what comes next (see IMPLEMENTATION_PLAN §5, LEARNING_SYSTEM)
 
-- Apply the user's R2 art review feedback first.
-- NPC system: idle wandering, facing the player, balloons (`!` quest, `?` turn in, `…` small talk).
-- Dialogue system: portrait panel with six expressions, typewriter text, choices, a dialogue graph format in `src/content/`.
-- Building entry: door → Language Academy interior map → back outside (scene transition, return spawn).
-- NPC behavior for the cast already in town (Mayor Bun, Maggie the Academy teacher, Jeremy, Jonas, Summy, Remy, Theo, Ash, Noah and Mochi): turning, balloons, real dialogue.
-- **Still missing from the user:** NPC style references and friend photos (`references/private/`, git-ignored), and
-  more village references.
+- Learning encounter flow in 7 steps: situation, explanation, example, exercise, feedback, retry, completion.
+- Question types: choose-meaning, choose-target and dialogue-reply first.
+- Greetings content packs for es, de, ja, zh-TW and en, with explanations in English and zh-TW. Native-speaker review is still needed.
+- Leitner review (the Learn button) and energy: a wrong answer costs 1 energy. Practice Corner in the Academy restores energy for free.
+- Hook: Maggie's "I'm still writing the lesson cards" line becomes the real first lesson.
+
+## R3: what was added
+
+- Dialogue graphs (`src/content/dialogues/`), `DialogueRunner` (pure logic), and `DialogueBox` UI: portrait, typewriter
+  text, choices; keyboard, mouse and touch. Story flags are saved immediately after each conversation.
+- `NpcBrain`: strolls near home, stops and faces the player, plays a talk animation. `PetBrain`: Mochi follows Noah.
+  Actors collide with each other.
+- Warps: building `enter`, plus `warp` objects. Language Academy interior map with indoor lighting. The location
+  (indoor or outdoor) is saved.
+- Screenshots: `docs/screenshots/r3/`.
 
 ## What exists (R1)
 

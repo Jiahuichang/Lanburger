@@ -25,6 +25,11 @@ export const PROP_DEFS: Record<PropKind, PropDef> = {
   fountain: { solid: { w: 84, h: 34 } },
   rock: { solid: { w: 14, h: 6 } },
   sign: { solid: { w: 10, h: 4 } },
+  blackboard: {},
+  bookshelf: { solid: { w: 30, h: 10 } },
+  desk: { solid: { w: 26, h: 10 } },
+  plant: { solid: { w: 10, h: 6 } },
+  wallWindow: { light: { dx: 0, dy: -14, radius: 26 } },
 };
 
 /** Word Lanterns are interactable and have a fixed small footprint. */

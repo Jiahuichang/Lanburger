@@ -14,6 +14,8 @@ export const en = {
   'prompt.read': 'Read',
   'prompt.look': 'Look',
   'prompt.talk': 'Talk',
+  'prompt.enter': 'Enter',
+  'dialogue.next': 'Continue',
   'prompt.door': '{name}',
   'lantern.dark': 'This Word Lantern is dark. It will glow again once you master {topic}.',
   'lantern.lit': 'The {topic} lantern glows warmly. Well done!',

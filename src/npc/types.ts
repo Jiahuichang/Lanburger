@@ -19,6 +19,12 @@ export interface NpcDefinition {
   facing?: Facing;
   /** One English line shown when talked to, until the dialogue system (R3) takes over. */
   greeting?: string;
+  /** Conversation used once this save flag is set (e.g. after the first talk). */
+  dialogueAfter?: { flag: string; id: string };
+  /** How far the NPC strolls from home, in tiles (0 or omitted = stays put). */
+  wander?: number;
+  /** A save flag that makes the quest balloon '!' turn into small talk '…'. */
+  questDoneFlag?: string;
   /** A pet standing beside the NPC (to their right). */
   pet?: { kind: 'dog'; name: string; line: string };
   dialogueId: string;

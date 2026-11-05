@@ -6,11 +6,11 @@
  */
 import type { Facing } from '../../character/types';
 
-export const GROUND_KINDS = ['grass', 'path', 'plaza', 'water', 'bridge', 'forest', 'soil', 'stairs'] as const;
+export const GROUND_KINDS = ['grass', 'path', 'plaza', 'water', 'bridge', 'forest', 'soil', 'stairs', 'floor', 'wall', 'void', 'rug'] as const;
 export type GroundKind = (typeof GROUND_KINDS)[number];
 
 /** Ground the player can never stand on. */
-export const BLOCKING_GROUND: readonly GroundKind[] = ['water', 'forest'];
+export const BLOCKING_GROUND: readonly GroundKind[] = ['water', 'forest', 'wall', 'void'];
 
 export type GroundOp =
   | { op: 'rect'; kind: GroundKind; x: number; y: number; w: number; h: number }
@@ -31,6 +31,11 @@ export const PROP_KINDS = [
   'fountain',
   'rock',
   'sign',
+  'blackboard',
+  'bookshelf',
+  'desk',
+  'plant',
+  'wallWindow',
 ] as const;
 export type PropKind = (typeof PROP_KINDS)[number];
 
@@ -69,6 +74,21 @@ export interface BuildingObject {
   w: number;
   /** How far the building reaches back from its front edge (tiles) — its collision footprint. */
   depth: number;
+  /** Walking into (or using) the door takes the player inside. */
+  enter?: { to: string; spawn: string };
+}
+
+/** Walking into this area while facing `facing` moves the player to another map. */
+export interface WarpObject {
+  type: 'warp';
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  to: string;
+  spawn: string;
+  facing: Facing;
 }
 
 export interface SignObject {
@@ -91,7 +111,7 @@ export interface LanternObject {
   y: number;
 }
 
-export type MapObject = SpawnObject | PropObject | BuildingObject | SignObject | LanternObject;
+export type MapObject = SpawnObject | PropObject | BuildingObject | SignObject | LanternObject | WarpObject;
 
 export interface MapSource {
   id: string;
@@ -104,4 +124,6 @@ export interface MapSource {
   objects: MapObject[];
   /** Spawn used when the save has no position on this map. */
   defaultSpawn: string;
+  /** Interiors use warm indoor light instead of the dusk tint. */
+  indoor?: boolean;
 }

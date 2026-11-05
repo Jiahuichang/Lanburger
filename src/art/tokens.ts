@@ -59,6 +59,8 @@ export const palette = {
   glowWarm: ramps.lamp[2],
   /** Multiplied over the whole map: the dusk mood (ART_DIRECTION §1.2, §8). */
   duskTint: '#b4a6c2',
+  /** Interiors: a gentle warm lamplight instead of dusk. */
+  indoorTint: '#e8d6c8',
   white: '#ffffff',
 } as const;
 

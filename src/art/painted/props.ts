@@ -203,6 +203,93 @@ const PROPS: Record<PropKind, (seed: number) => Painted> = {
     c.outline(w[3]);
     return done(c, 10, 25);
   },
+
+  // ── classroom (R3)
+
+  blackboard() {
+    // hangs on the wall; its foot is the wall's bottom edge
+    const c = new PixelCanvas(64, 34);
+    const w = ramps.wood;
+    c.rect(0, 2, 64, 26, w[2]);
+    c.rect(2, 4, 60, 22, ramps.foliage[3]);
+    c.hline(2, 61, 4, ramps.foliage[2]);
+    // chalk: a little greeting and a burger doodle
+    for (const [x, y, len] of [[6, 9, 14], [6, 13, 20], [6, 17, 10], [24, 9, 8]] as const) c.hline(x, x + len, y, ramps.wall[0]);
+    c.ellipse(48, 13, 6, 3, ramps.wall[1]);
+    c.hline(42, 54, 16, ramps.wall[1]);
+    c.hline(43, 53, 18, ramps.wall[1]);
+    c.rect(0, 27, 64, 3, w[1]); // chalk tray
+    c.rect(10, 26, 3, 1, ramps.wall[0]);
+    c.rect(30, 26, 4, 1, ramps.blossom[0]);
+    c.outline(palette.ink);
+    return done(c, 32, 33);
+  },
+
+  bookshelf(seed) {
+    const c = new PixelCanvas(34, 42);
+    const w = ramps.wood;
+    c.shadedRect(1, 1, 32, 40, w, 2);
+    const r = rng(seed + 12);
+    const spines = [ramps.roofRed[1], ramps.water[1], ramps.foliage[1], ramps.lamp[2], ramps.royal[1], ramps.wall[1]];
+    for (const shelfY of [4, 16, 28]) {
+      c.rect(3, shelfY, 28, 10, w[3]);
+      let x = 4;
+      while (x < 29) {
+        const bw = 2 + Math.floor(r() * 2);
+        const bh = 6 + Math.floor(r() * 4);
+        const col = spines[Math.floor(r() * spines.length)];
+        c.rect(x, shelfY + 10 - bh, bw, bh, col);
+        c.set(x, shelfY + 10 - bh, ramps.wall[0]);
+        x += bw + (r() < 0.2 ? 2 : 0);
+      }
+      c.hline(2, 31, shelfY + 10, w[0]);
+    }
+    c.outline(palette.ink);
+    return done(c, 17, 41);
+  },
+
+  desk() {
+    const c = new PixelCanvas(30, 24);
+    const w = ramps.wood;
+    c.shadedRect(1, 4, 28, 8, w, 2); // top
+    c.rect(2, 12, 3, 10, w[2]);
+    c.rect(25, 12, 3, 10, w[2]);
+    c.rect(5, 12, 20, 3, w[3]);
+    // a notebook and a pencil
+    c.rect(6, 5, 8, 5, ramps.wall[0]);
+    c.vline(10, 5, 9, ramps.wall[2]);
+    c.line(17, 8, 22, 6, ramps.lamp[1]);
+    c.outline(palette.ink);
+    return done(c, 15, 23);
+  },
+
+  plant() {
+    const c = new PixelCanvas(18, 26);
+    c.shadedRect(4, 17, 10, 8, ramps.roofRed, 1);
+    c.hline(3, 14, 17, ramps.roofRed[0]);
+    c.shadedEllipse(9, 11, 7, 6, ramps.foliage);
+    c.shadedEllipse(5, 8, 4, 4, ramps.foliage);
+    c.shadedEllipse(13, 7, 4, 4, ramps.foliage);
+    c.outline(palette.ink);
+    return done(c, 9, 25);
+  },
+
+  wallWindow() {
+    // a window set into the wall; evening light outside
+    const c = new PixelCanvas(26, 26);
+    const w = ramps.wood;
+    c.rect(0, 0, 26, 24, w[2]);
+    c.rect(2, 2, 22, 19, ramps.shade[1]);
+    c.rect(2, 2, 22, 6, ramps.royal[2]);
+    c.rect(2, 8, 22, 5, ramps.bunOrange[2]);
+    c.rect(2, 13, 22, 8, ramps.foliage[3]);
+    c.set(18, 5, ramps.lamp[0]);
+    c.vline(12, 2, 20, w[1]);
+    c.hline(2, 23, 11, w[1]);
+    c.rect(-1, 22, 28, 3, w[1]);
+    c.outline(palette.ink);
+    return done(c, 13, 25);
+  },
 };
 
 /** Word Lantern: dark until its topic is mastered, then a warm lamp. */

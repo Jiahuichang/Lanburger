@@ -32,6 +32,16 @@ export interface Interactable {
   body: string;
   /** For lanterns: the topic name. */
   topicName?: string;
+  /** Doors that lead somewhere. */
+  warp?: { to: string; spawn: string };
+}
+
+export interface Warp {
+  id: string;
+  rect: Rect;
+  to: string;
+  spawn: string;
+  facing: Facing;
 }
 
 export interface LightPoint {
@@ -58,6 +68,8 @@ export class TileMap {
   readonly solids: Rect[] = [];
   readonly interactables: Interactable[] = [];
   readonly lights: LightPoint[] = [];
+  readonly warps: Warp[] = [];
+  readonly indoor: boolean;
   readonly spawns = new Map<string, { x: number; y: number; facing: Facing }>();
   readonly props: (PropObject & { px: number; py: number })[] = [];
   readonly buildings: (BuildingObject & { px: number; py: number; pw: number })[] = [];
@@ -72,6 +84,7 @@ export class TileMap {
     this.widthPx = src.width * this.tile;
     this.heightPx = src.height * this.tile;
     this.defaultSpawn = src.defaultSpawn;
+    this.indoor = !!src.indoor;
 
     this.ground = new Uint8Array(this.cols * this.rows).fill(GROUND_KINDS.indexOf(src.base));
     for (const op of src.ground) this.paint(op);
@@ -129,15 +142,23 @@ export class TileMap {
             promptY: py - 40,
             title: o.name,
             body: o.blurb,
+            warp: o.enter,
           });
+          if (o.enter) {
+            // a doormat-sized trigger right in front of the door
+            this.warps.push({ id: `${o.id}:enter`, rect: { x: px + pw / 2 - 10, y: py - 2, w: 20, h: 8 }, to: o.enter.to, spawn: o.enter.spawn, facing: 'up' });
+          }
           break;
         }
+        case 'warp':
+          this.warps.push({ id: o.id, rect: { x: px, y: py, w: o.w * T, h: o.h * T }, to: o.to, spawn: o.spawn, facing: o.facing });
+          break;
       }
     }
   }
 
   kindAt(col: number, row: number): GroundKind {
-    if (col < 0 || row < 0 || col >= this.cols || row >= this.rows) return 'forest';
+    if (col < 0 || row < 0 || col >= this.cols || row >= this.rows) return this.indoor ? 'void' : 'forest';
     return GROUND_KINDS[this.ground[row * this.cols + col]];
   }
 

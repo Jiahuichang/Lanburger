@@ -478,6 +478,142 @@ svg rect {
   line-height: 1.4;
 }
 
+/* ───────────── dialogue panel */
+
+.dialogue {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--safe-b) + var(--gap));
+  width: min(780px, calc(100vw - var(--safe-l) - var(--safe-r) - 24px));
+  transform: translate(-50%, 12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ms-ui) ease-out, transform var(--ms-ui) ease-out;
+  z-index: 2;
+}
+
+.dialogue.is-open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+.dialogue-card {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 12px 18px 14px 12px;
+  min-height: 150px;
+  cursor: pointer;
+}
+
+.dialogue-portrait {
+  flex: none;
+  width: 128px;
+  height: 128px;
+  border-radius: var(--r-card);
+  background: radial-gradient(circle at 50% 35%, var(--shade-0), var(--shade-2));
+  border: 2px solid var(--edge-soft);
+  overflow: hidden;
+}
+
+.dialogue-portrait canvas {
+  width: 128px;
+  height: 128px;
+  image-rendering: pixelated;
+  display: block;
+}
+
+.no-portrait .dialogue-portrait {
+  display: none;
+}
+
+.dialogue-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.dialogue-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-title);
+}
+
+.dialogue-text {
+  font-size: 17px;
+  line-height: 1.45;
+  min-height: 3em;
+  user-select: text;
+}
+
+.dialogue-choices {
+  display: grid;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.dialogue-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--c-text);
+  background: var(--panel-glass-soft);
+  border: 1px solid var(--edge-faint);
+  border-radius: var(--r-card);
+  cursor: pointer;
+}
+
+.dialogue-choice.is-selected,
+.dialogue-choice:hover {
+  border-color: var(--c-title);
+  background: var(--c-panel-deep);
+}
+
+.dialogue-choice-key {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--c-title);
+  color: var(--c-ink);
+  font-size: 14px;
+  font-weight: 700;
+  flex: none;
+}
+
+.is-touch .dialogue-choice-key {
+  display: none;
+}
+
+.dialogue-more {
+  position: absolute;
+  right: 16px;
+  bottom: 8px;
+  color: var(--c-title);
+  font-size: 14px;
+  opacity: 0;
+}
+
+.dialogue-more.is-shown {
+  opacity: 1;
+  animation: prompt-bob 1s ease-in-out infinite;
+}
+
+/* while talking, the touch buttons step aside */
+.is-talking .touch-controls.is-visible {
+  display: none;
+}
+
 /* ───────────── touch controls (GAME_DESIGN §7) */
 
 .touch-controls {
@@ -882,6 +1018,31 @@ select {
   }
   .speech-bubble {
     width: min(320px, 50vw);
+  }
+  .dialogue-card {
+    min-height: 0;
+    padding: 8px 14px 10px 8px;
+    gap: 10px;
+  }
+  .dialogue-portrait,
+  .dialogue-portrait canvas {
+    width: 64px;
+    height: 64px;
+  }
+  .dialogue-name {
+    font-size: 16px;
+  }
+  .dialogue-text {
+    font-size: 15px;
+    line-height: 1.35;
+  }
+  .dialogue-choice {
+    min-height: 40px;
+    font-size: 15px;
+    padding: 4px 10px;
+  }
+  .dialogue-choices {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
