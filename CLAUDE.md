@@ -19,6 +19,7 @@ Communicate with the user in **Traditional Chinese (Taiwan)**. All in-game UI te
 | Lessons, questions, review, languages              | `docs/LEARNING_SYSTEM.md`                                      |
 | Quests, XP, energy, mastery, burger growth, save   | `docs/PROGRESSION_SYSTEM.md`                                   |
 | Cooking / Snake / Kart or the mini-game framework  | `docs/MINIGAMES.md`                                            |
+| NPC looks, friend NPCs, character cards           | `docs/CHARACTERS.md`                                           |
 
 The older docs (`ART_BIBLE`, `LEARNING_DESIGN`, `MINIGAME_DESIGN`, `ROADMAP`, `TECH_ARCHITECTURE`,
 `ASSET_GUIDELINES`) describe the retired Phase 1 side-scroller. Use them only for history.

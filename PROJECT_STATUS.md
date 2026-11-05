@@ -16,6 +16,11 @@ _Last updated: 2026-11-05_
   - Mayor Bun, the first NPC: a shared chibi painter driven by character cards, 6 portraits, a quest balloon, and she
     faces the player and says a line.
   - `?gallery=1` art gallery and the `?stage=` / `?toppings=` growth preview.
+- **Friend NPCs (2026-11-05):** Jeremy (Racing Garage), Jonas (Travel Station) and Summy (General Store) are drawn and
+  standing in town. Maggie is drawn but has no role yet. Cards are in `docs/CHARACTERS.md`. The photos for Jungkook, V,
+  Keonho and Martin were not used: per their notes they are public figures, not friends who consented. Original
+  look-alike-free characters are possible if the user wants. Waiting on the user: Maggie's real note (the file is a copy
+  of Jeremy's) and her role.
 
 ## Play online (any phone, no install)
 

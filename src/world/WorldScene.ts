@@ -166,18 +166,20 @@ export class WorldScene implements Scene {
   /** Place this map's NPCs: a view, a small solid footprint, a Talk interactable and a quest balloon. */
   private async spawnNpcs(): Promise<void> {
     const T = this.map.tile;
-    const balloon = assets.sprite('ui.balloon.!', () => paintBalloon('!'));
+    const quest = assets.sprite('ui.balloon.!', () => paintBalloon('!'));
+    const chat = assets.sprite('ui.balloon.…', () => paintBalloon('…'));
     for (const def of NPCS.filter((n) => n.mapId === this.map.id)) {
       const x = def.x * T;
       const y = def.y * T;
       const view = new ActorView(await loadNpcSprite(def.sprite));
       this.scene.add(view.object);
+      // '!' = has a quest, '…' = small talk (GAME_DESIGN §8)
+      const balloon = def.questHooks?.length ? quest : chat;
       const b = placeSprite(balloon.tex, balloon.w, balloon.h, balloon.anchor, x, y - 50);
       const mat = b.material as THREE.MeshBasicMaterial;
       mat.transparent = true;
       mat.depthTest = false;
       b.renderOrder = 8;
-      b.visible = (def.questHooks?.length ?? 0) > 0;
       this.scene.add(b);
       this.map.solids.push({ x: x - 6, y: y - 6, w: 12, h: 6 });
       this.map.interactables.push({

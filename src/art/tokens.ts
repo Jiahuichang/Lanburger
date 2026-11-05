@@ -25,6 +25,11 @@ export const ramps = {
   shade: ['#4a4e66', '#313e42', '#232a36', '#141820'],
   patty: ['#a0583a', '#7a3e2a', '#55291f', '#2f1612'],
   skin: ['#fbd9bd', '#e9b48f', '#c4876a', '#8a5a48'],
+  skinFair: ['#fde6d6', '#f2c5a8', '#d39a80', '#9a6a58'],
+  skinTan: ['#f0c99f', '#dba57a', '#b37b57', '#7a5038'],
+  hairBlack: ['#5a5466', '#33303d', '#221f2a', '#141218'],
+  hairBlond: ['#f6e3a0', '#e3c46a', '#b8943e', '#7a5f26'],
+  denim: ['#8fa9c9', '#5f7ea6', '#3f5a80', '#283a57'],
   soil: ['#a07a52', '#7d5b3c', '#5a4030', '#3a2a20'],
 } as const satisfies Record<string, Ramp>;
 

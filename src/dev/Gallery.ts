@@ -46,6 +46,10 @@ export async function showGallery(root: HTMLElement): Promise<void> {
   for (const [name, p] of [
     ['Lanburger', await loadHeroPortrait()],
     ['Mayor Bun', await loadNpcPortrait('mayor-bun')],
+    ['Jeremy', await loadNpcPortrait('jeremy')],
+    ['Jonas', await loadNpcPortrait('jonas')],
+    ['Summy', await loadNpcPortrait('summy')],
+    ['Maggie', await loadNpcPortrait('maggie')],
   ] as const) {
     const row = el('div', 'gallery-row');
     row.append(el('div', 'gallery-label', name));
@@ -58,13 +62,16 @@ export async function showGallery(root: HTMLElement): Promise<void> {
     ports.append(row);
   }
 
-  const npc = section(page, 'Mayor Bun — sample NPC');
-  const mayor = await loadNpcSprite('mayor-bun');
-  const nrow = el('div', 'gallery-row');
-  for (const f of ['down', 'right', 'up', 'left'] as const) nrow.append(anim(mayor, 'walk', f, `walk ${f}`));
-  nrow.append(anim(mayor, 'idle', 'down', 'idle'));
-  nrow.append(anim(mayor, 'talk', 'down', 'talk'));
-  npc.append(nrow);
+  const npc = section(page, 'NPCs — Mayor Bun and the friend NPCs');
+  for (const [key, name] of [['mayor-bun', 'Mayor Bun'], ['jeremy', 'Jeremy'], ['jonas', 'Jonas'], ['summy', 'Summy'], ['maggie', 'Maggie']] as const) {
+    const sprite = await loadNpcSprite(key);
+    const nrow = el('div', 'gallery-row');
+    nrow.append(el('div', 'gallery-label', name));
+    for (const f of ['down', 'right', 'up', 'left'] as const) nrow.append(anim(sprite, 'walk', f, `walk ${f}`));
+    nrow.append(anim(sprite, 'idle', 'down', 'idle'));
+    nrow.append(anim(sprite, 'talk', 'down', 'talk'));
+    npc.append(nrow);
+  }
 
   const town = section(page, 'Hello Town — buildings');
   const brow = el('div', 'gallery-row');
