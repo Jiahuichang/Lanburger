@@ -23,12 +23,12 @@ export const CHARACTER_SPECS: Record<string, ChibiSpec> = {
   // ── Friend NPCs (character cards approved 2026-11-05; built from consented reference photos kept
   //    privately in references/private/, which is never committed)
 
-  /** Jeremy — Racing Garage mechanic. Tall and slim, tan skin, messy black hair, stylish open overshirt. */
+  /** Jeremy — Racing Garage mechanic. Tall and slim, tan skin, center-parted black hair, stylish open overshirt. */
   jeremy: {
     skin: ramps.skinTan,
     hair: ramps.hairBlack,
-    hairStyle: 'spiky',
-    bangs: 'side',
+    hairStyle: 'short',
+    bangs: 'center',
     outfit: ramps.water,
     outfitStyle: 'overshirt',
     trim: ramps.wall,
@@ -71,17 +71,20 @@ export const CHARACTER_SPECS: Record<string, ChibiSpec> = {
     prop: 'tea',
   },
 
-  /** Maggie — role to be decided. Long wavy dark hair parted to the side, warm smile, black top, bracelet. */
+  /** Maggie — role to be decided. Always smiling (crescent "fox" eyes), long wavy dark hair parted to the side,
+   *  black top and a blue skirt, bracelet. */
   maggie: {
     skin: ramps.skin,
     hair: ramps.hairBlack,
     hairStyle: 'long',
     bangs: 'side',
     wavy: true,
+    eyes: 'smile',
     outfit: ramps.shade,
     outfitStyle: 'tee',
     trim: ramps.shade,
     legs: ramps.denim,
+    bottoms: 'skirt',
     shoes: ramps.wall,
     prop: 'bracelet',
   },

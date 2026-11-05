@@ -17,8 +17,8 @@ export interface ChibiSpec {
   skin: Ramp;
   hair: Ramp;
   hairStyle: 'bun' | 'short' | 'long' | 'bob' | 'spiky' | 'tousled';
-  /** Fringe: full (default), swept to one side, or none (forehead visible). */
-  bangs?: 'full' | 'side' | 'none';
+  /** Fringe: full (default), swept to one side, center-parted curtains, or none (forehead visible). */
+  bangs?: 'full' | 'side' | 'center' | 'none';
   /** Wavy / curly lengths (long and bob styles). */
   wavy?: boolean;
   outfit: Ramp;
@@ -26,7 +26,9 @@ export interface ChibiSpec {
   /** Second outfit color (collar, apron, hood lining, the tee under an overshirt). */
   trim: Ramp;
   legs: Ramp;
-  bottoms?: 'pants' | 'shorts';
+  bottoms?: 'pants' | 'shorts' | 'skirt';
+  /** Resting eye shape: round (default) or smiling crescents. */
+  eyes?: 'round' | 'smile';
   shoes: Ramp;
   /** Two pixels taller (longer legs). */
   tall?: boolean;
@@ -77,7 +79,7 @@ function frame(sp: ChibiSpec, p: Pose): PixelCanvas {
     const top = 40 - L + lifts[i];
     const len = 4 + L;
     for (let y = top; y < top + len; y++) {
-      const skinPart = shorts && y >= top + 2;
+      const skinPart = (shorts && y >= top + 2) || sp.bottoms === 'skirt';
       c.hline(lx, lx + 2, y, skinPart ? sp.skin[1] : sp.legs[2]);
       if (skinPart && sp.tattoos && (y + lx) % 3 === 0) c.set(lx + 1, y, sp.skin[3]);
     }
@@ -95,6 +97,13 @@ function frame(sp: ChibiSpec, p: Pose): PixelCanvas {
   }
   c.hline(9, 22, bottom, sp.outfit[2]);
   if (shorts && !back) c.hline(11, 20, bottom + 1, sp.legs[2]);
+  if (sp.bottoms === 'skirt') {
+    // a flared skirt over the top of the legs
+    for (let y = bottom - 2; y <= bottom + 3; y++) {
+      const flare = Math.max(0, y - bottom + 1);
+      c.hline(9 - flare, 22 + flare, y, y === bottom + 3 ? sp.legs[2] : (y - bottom) % 2 ? sp.legs[1] : sp.legs[0]);
+    }
+  }
   if (!back) {
     switch (sp.outfitStyle) {
       case 'apron':
@@ -230,9 +239,11 @@ function hair(c: PixelCanvas, sp: ChibiSpec, hy: number, dir: Dir): void {
       let line: number;
       if (bangs === 'none') line = hy - 6 + (Math.abs(x - 15.5) > 6 ? 3 : 0);
       else if (bangs === 'side') line = hy - 5 + Math.round((x - 7) * 0.35);
+      else if (bangs === 'center') line = hy - 7 + Math.round(Math.abs(x - 15.5) * 0.6);
       else line = hy - 3 + ((x * 5) % 3) + (dir === 'right' && x > 18 ? -1 : 1);
       if (y < line || Math.abs(nx) > 0.82) shade(x, y, nx, ny);
     });
+    if (bangs === 'center' && dir === 'down') c.vline(15, hy - 11, hy - 7, h[3]);
     const sides = dir === 'right' ? [7] : [6, 24];
     for (const x of sides) {
       for (let j = 0; j < len; j++) {
@@ -263,8 +274,14 @@ function face(c: PixelCanvas, sp: ChibiSpec, hy: number, side: boolean, talk: bo
   const ex = side ? [15, 21] : [10, 19];
   const ey = hy + 1;
   for (const x of ex) {
-    c.rect(x, ey, 2, 3, ink);
-    c.set(x, ey, ramps.wall[0]);
+    if (sp.eyes === 'smile') {
+      c.set(x - 1, ey + 2, ink);
+      c.hline(x, x + 1, ey + 1, ink);
+      c.set(x + 2, ey + 2, ink);
+    } else {
+      c.rect(x, ey, 2, 3, ink);
+      c.set(x, ey, ramps.wall[0]);
+    }
   }
   if (sp.glasses) {
     for (const x of side ? [ex[1]] : ex) {
@@ -352,6 +369,7 @@ function portrait(sp: ChibiSpec, e: Expression): PixelCanvas {
     let line: number;
     if (bangs === 'none') line = 18 + lift + (Math.abs(x - 32) > 13 ? 8 : Math.abs(x - 32) > 9 ? 3 : 0);
     else if (bangs === 'side') line = 18 + lift + Math.round((x - 12) * 0.32);
+    else if (bangs === 'center') line = 14 + lift + Math.round(Math.abs(x - 32) * 0.62);
     else line = 25 + lift + Math.round(Math.abs(Math.sin(x * 0.45)) * 3) - 1;
     if (y > line && Math.abs(nx) < 0.78) return;
     if (y > 25 + lift + 12) return;
@@ -371,6 +389,7 @@ function portrait(sp: ChibiSpec, e: Expression): PixelCanvas {
     c.hline(26, 38, 13 + lift, ramps.royal[2]);
   }
   for (let i = 0; i < 6; i++) c.set(20 + i, 15 + lift + (i % 3 === 0 ? 1 : 0), h[0]);
+  if (bangs === 'center') c.vline(32, 9 + lift, 14 + lift, h[3]);
 
   // face
   const ey = 33 + lift;
@@ -389,7 +408,8 @@ function portrait(sp: ChibiSpec, e: Expression): PixelCanvas {
   };
   switch (e) {
     case 'neutral':
-      eyes.forEach((x) => openEye(x));
+      if (sp.eyes === 'smile') eyes.forEach(smileEye);
+      else eyes.forEach((x) => openEye(x));
       eyes.forEach((x) => brow(x, 0, 0));
       break;
     case 'happy':
@@ -436,7 +456,11 @@ function portrait(sp: ChibiSpec, e: Expression): PixelCanvas {
   }
   switch (e) {
     case 'neutral':
-      c.hline(30, 33, my, ink);
+      if (sp.eyes === 'smile') {
+        c.set(29, my - 1, ink);
+        c.hline(30, 33, my, ink);
+        c.set(34, my - 1, ink);
+      } else c.hline(30, 33, my, ink);
       break;
     case 'happy':
       c.rect(29, my - 1, 6, 3, ink);
