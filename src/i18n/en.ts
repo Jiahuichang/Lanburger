@@ -43,6 +43,7 @@ export const en = {
   'settings.note': 'Menus are always in English. Lessons use the explanation language you pick.',
   'settings.close': 'Done',
   'settings.sfx': 'Sound effects',
+  'settings.music': 'Music',
   'settings.on': 'On',
   'settings.off': 'Off',
   'touch.interact': 'Talk',

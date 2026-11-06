@@ -110,6 +110,25 @@ Useful URLs:
   hidden, so they were checked from computed styles). 🧪 Not yet heard or seen on a real phone. On iOS, check that
   sound plays after the first tap, and with the silent switch on.
 
+## Background music (2026-11-06, user request)
+
+- `src/audio/Music.ts` is a small look-ahead sequencer on Web Audio.
+  - Five soft synth instruments: flute, pluck, pad, bass, music-box bell.
+  - A generated reverb.
+  - Crossfades between maps, quieter during lessons, and silence while the tab is hidden.
+  - It starts after the player's first tap or key press (browser rule).
+- Songs are content: `src/content/music/index.ts`, with the song format in `src/audio/songs.ts`. Maps pick one
+  with `MapSource.music`.
+  - "Hello Town Waltz": F major, 3/4. A flute melody; on every second loop a bell doubles it an octave up.
+  - "Chalk and Sunlight": the Academy's music-box tune in C major.
+  - Both are original compositions. The mood brief was warm, nostalgic, loopable town music; no existing game's
+    melody is used.
+- Settings → Music On/Off (`settings.musicVolume`).
+- A song can name a recorded `file` (under `public/`) that replaces the synth: a produced or licensed track can go
+  in later without code changes.
+- Checked in the built-in browser: plays, loops, crossfades, ducks, turns off. Level: peak about 0.18, so no
+  clipping. 🧪 Not yet heard on a real phone or speakers; the mix and tempo may need tuning by ear.
+
 ## R5: what was added
 
 - Quests: `src/quest/QuestSystem.ts` (pure). State steps (explore / visit / learn / practice) are read from save flags,

@@ -8,6 +8,8 @@ import type { UiRoot } from '../ui/UiRoot';
 import { PixelRenderer } from '../render/PixelRenderer';
 import { ProgressDirector } from '../progress/ProgressDirector';
 import { Sfx } from '../audio/Sfx';
+import { Music } from '../audio/Music';
+import { SONGS } from '../content/music';
 
 /** Owns the pixel renderer, loop, scene manager and the service bundle handed to scenes. */
 export class Game {
@@ -29,7 +31,10 @@ export class Game {
       scenes: undefined as unknown as SceneManager,
       progress: new ProgressDirector(save, events, ui),
       sfx: new Sfx(() => save.data.settings.sfxVolume),
+      music: undefined as unknown as Music,
     };
+    // the music shares the sound-effect audio context (created on the first tap / key press)
+    services.music = new Music(SONGS, () => services.sfx.ensure(), () => save.data.settings.musicVolume, import.meta.env.BASE_URL);
     services.scenes = new SceneManager(() => services, ui.fade);
     this.services = services;
     ui.bind(services);

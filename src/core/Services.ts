@@ -7,6 +7,7 @@ import type { PixelRenderer } from '../render/PixelRenderer';
 import type { SupportLanguage, TargetLanguage } from '../learning/types';
 import type { ProgressDirector } from '../progress/ProgressDirector';
 import type { Sfx } from '../audio/Sfx';
+import type { Music } from '../audio/Music';
 import type { QuestChange } from '../quest/QuestSystem';
 
 export interface GameEvents {
@@ -44,4 +45,5 @@ export interface Services {
   flags: DebugFlags;
   progress: ProgressDirector;
   sfx: Sfx;
+  music: Music;
 }

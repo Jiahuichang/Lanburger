@@ -100,8 +100,13 @@ export class Sfx {
     }
   }
 
+  /** The shared audio context (music uses it too); null until the first user gesture. */
+  context(): AudioContext | null {
+    return this.ctx ?? null;
+  }
+
   /** Create or resume the audio context (must first happen inside a user gesture). */
-  private ensure(): AudioContext | null {
+  ensure(): AudioContext | null {
     try {
       if (!this.ctx) {
         const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;

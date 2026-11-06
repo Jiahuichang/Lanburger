@@ -83,6 +83,7 @@ export class LessonPanel {
     this.el.querySelector('.lesson-title')!.textContent = opts.title;
     this.el.querySelector('.lesson-x')!.setAttribute('aria-label', t('lesson.leave'));
     this.el.classList.add('is-open');
+    this.s.music.duck(true);
     this.render();
     return new Promise((r) => (this.resolve = r));
   }
@@ -92,6 +93,7 @@ export class LessonPanel {
     this.session = null;
     window.speechSynthesis?.cancel();
     this.el.classList.remove('is-open');
+    this.s.music.duck(false);
     document.body.classList.remove('is-talking');
     this.s.input.enabled = true;
     const r = this.resolve;

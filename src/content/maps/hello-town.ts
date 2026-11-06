@@ -38,6 +38,7 @@ export const helloTown: MapSource = {
   height: 60,
   base: 'grass',
   defaultSpawn: 'start',
+  music: 'hello-town',
   ground: [
     // forest frame
     { op: 'rect', kind: 'forest', x: 0, y: 0, w: 80, h: 4 },

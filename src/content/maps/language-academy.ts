@@ -17,6 +17,7 @@ export const languageAcademy: MapSource = {
   base: 'void',
   indoor: true,
   defaultSpawn: 'entrance',
+  music: 'academy',
   ground: [
     { op: 'rect', kind: 'wall', x: 1, y: 0, w: 18, h: 3 },
     { op: 'rect', kind: 'floor', x: 1, y: 3, w: 18, h: 10 },

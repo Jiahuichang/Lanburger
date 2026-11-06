@@ -140,4 +140,6 @@ export interface MapSource {
   defaultSpawn: string;
   /** Interiors use warm indoor light instead of the dusk tint. */
   indoor?: boolean;
+  /** Background music id (src/content/music). */
+  music?: string;
 }

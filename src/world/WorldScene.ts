@@ -127,6 +127,7 @@ export class WorldScene implements Scene {
     this.s.ui.hud.setPortrait(await loadHeroPortrait(), 'neutral');
     await this.spawnNpcs();
     this.s.ui.minimap.setMap(this.map, save.lanterns, this.lanternCount());
+    this.s.music.play(MAPS[this.map.id]?.music ?? null);
 
     this.cam = { x: this.player.x, y: this.player.y - 16 };
     if (this.s.flags.debug) this.buildDebug();

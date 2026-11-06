@@ -12,6 +12,7 @@ export class SettingsPanel {
   private target: HTMLSelectElement;
   private support: HTMLSelectElement;
   private sfx: HTMLSelectElement;
+  private music: HTMLSelectElement;
   private _open = false;
 
   constructor(parent: HTMLElement, private s: Services) {
@@ -32,6 +33,10 @@ export class SettingsPanel {
           <span class="select-wrap"><select class="sel-support"></select></span>
         </label>
         <label class="field">
+          <span class="field-label" data-k="settings.music"></span>
+          <span class="select-wrap"><select class="sel-music"><option value="on"></option><option value="off"></option></select></span>
+        </label>
+        <label class="field">
           <span class="field-label" data-k="settings.sfx"></span>
           <span class="select-wrap"><select class="sel-sfx"><option value="on"></option><option value="off"></option></select></span>
         </label>
@@ -42,6 +47,12 @@ export class SettingsPanel {
     this.target = this.el.querySelector('.sel-target')!;
     this.support = this.el.querySelector('.sel-support')!;
     this.sfx = this.el.querySelector('.sel-sfx')!;
+    this.music = this.el.querySelector('.sel-music')!;
+    this.music.addEventListener('change', () => {
+      this.s.save.update((d) => void (d.settings.musicVolume = this.music.value === 'on' ? 0.7 : 0));
+      this.s.save.flush();
+      this.s.music.refreshVolume();
+    });
     this.sfx.addEventListener('change', () => {
       const on = this.sfx.value === 'on';
       this.s.save.update((d) => void (d.settings.sfxVolume = on ? 0.8 : 0));
@@ -86,8 +97,10 @@ export class SettingsPanel {
     this.el.querySelector('.modal-title')!.textContent = t('settings.title');
     this.el.querySelectorAll<HTMLElement>('[data-k]').forEach((n) => (n.textContent = t(n.dataset.k as never)));
     this.el.querySelector('.field-note')!.textContent = t('settings.note');
-    this.sfx.options[0].textContent = t('settings.on');
-    this.sfx.options[1].textContent = t('settings.off');
+    for (const sel of [this.sfx, this.music]) {
+      sel.options[0].textContent = t('settings.on');
+      sel.options[1].textContent = t('settings.off');
+    }
     this.el.querySelector('.modal-done')!.textContent = t('settings.close');
     this.el.querySelector('.modal-x')!.setAttribute('aria-label', t('settings.close'));
   }
@@ -97,6 +110,7 @@ export class SettingsPanel {
     this.target.value = p.targetLanguage;
     this.support.value = p.supportLanguage;
     this.sfx.value = this.s.save.data.settings.sfxVolume > 0 ? 'on' : 'off';
+    this.music.value = this.s.save.data.settings.musicVolume > 0 ? 'on' : 'off';
   }
 
   private apply(): void {
