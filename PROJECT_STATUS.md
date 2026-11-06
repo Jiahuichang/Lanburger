@@ -76,7 +76,9 @@ Useful URLs:
   - **decided: the player picks Lanburger's Spanish forms** (-o or -a, e.g. encantado/encantada), and can change it
     in Settings. Maggie asks before the first gendered word. R6B adds a profile field, which means SAVE_VERSION 3
     and a migration (§7.2);
-  - the rest of §7 (tú/usted, how A1 maps to the villages, audio and typed answers,
+  - **decided: tú with townsfolk, friends and Maggie; usted with Mayor Bun and unfamiliar adults; ustedes for
+    every plural; vos only as a note;**
+  - the rest of §7 ( how A1 maps to the villages, audio and typed answers,
     who reviews the Spanish);
   - the Airlearn course list and screenshots (originals only, for reference).
   The teaching flow (§6) is final only after both arrive.
