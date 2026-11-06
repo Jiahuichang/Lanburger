@@ -56,6 +56,14 @@ export class KeyboardSource implements InputSource {
   }
 }
 
+/**
+ * Keys typed into a form field on an OPEN panel belong to that field. A field that kept focus after its
+ * panel closed must not swallow the arrow keys (that froze the player after changing a setting).
+ */
 function isFormField(t: EventTarget | null): boolean {
-  return t instanceof HTMLSelectElement || t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement;
+  const field = t instanceof HTMLSelectElement || t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement;
+  if (!field) return false;
+  if ((t as HTMLElement).closest('.modal.is-open')) return true;
+  (t as HTMLElement).blur();
+  return false;
 }

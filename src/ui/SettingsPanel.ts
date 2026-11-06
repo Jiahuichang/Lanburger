@@ -2,6 +2,7 @@ import type { Services } from '../core/Services';
 import { LANGUAGE_NAMES, t } from '../i18n';
 import { SUPPORT_LANGUAGES, TARGET_LANGUAGES, type SupportLanguage, type TargetLanguage } from '../learning/types';
 import { icons } from './icons';
+import { releaseFocus } from './focus';
 
 /**
  * Menus are always English (GAME_DESIGN §10). The player picks the language to learn and the
@@ -84,6 +85,7 @@ export class SettingsPanel {
 
   close(): void {
     this._open = false;
+    releaseFocus(this.el);
     this.el.classList.remove('is-open');
     this.s.input.enabled = true;
   }

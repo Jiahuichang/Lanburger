@@ -8,6 +8,7 @@ import { stepProgress } from '../quest/QuestSystem';
 import { START_MAP } from '../save/schema';
 import { LANGUAGE_NAMES, t, type StringKey } from '../i18n';
 import { icons } from './icons';
+import { releaseFocus } from './focus';
 
 /**
  * The HUD's Quests, Bag and Collection sheets (PROGRESSION_SYSTEM §1, §5.2, §8). Each one is a modal card
@@ -64,6 +65,7 @@ abstract class SheetPanel {
   close(): void {
     if (!this._open) return;
     this._open = false;
+    releaseFocus(this.el);
     this.el.classList.remove('is-open');
     this.s.input.enabled = true;
   }

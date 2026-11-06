@@ -6,6 +6,7 @@ import type { SupportLanguage, TargetLanguage } from '../learning/types';
 import { ENERGY_MAX } from '../save/schema';
 import { t } from '../i18n';
 import { icons } from './icons';
+import { releaseFocus } from './focus';
 
 /** BCP-47 voices for the Listen button (Web Speech API, when the device has one). */
 const VOICE: Record<TargetLanguage, string> = { en: 'en-US', es: 'es-ES', de: 'de-DE', ja: 'ja-JP', 'zh-TW': 'zh-TW' };
@@ -92,6 +93,7 @@ export class LessonPanel {
     if (!this.session) return;
     this.session = null;
     window.speechSynthesis?.cancel();
+    releaseFocus(this.el);
     this.el.classList.remove('is-open');
     this.s.music.duck(false);
     document.body.classList.remove('is-talking');
