@@ -6,6 +6,7 @@ import { InputManager } from '../input/InputManager';
 import type { SaveSystem } from '../save/SaveSystem';
 import type { UiRoot } from '../ui/UiRoot';
 import { PixelRenderer } from '../render/PixelRenderer';
+import { ProgressDirector } from '../progress/ProgressDirector';
 
 /** Owns the pixel renderer, loop, scene manager and the service bundle handed to scenes. */
 export class Game {
@@ -25,6 +26,7 @@ export class Game {
       ui,
       flags,
       scenes: undefined as unknown as SceneManager,
+      progress: new ProgressDirector(save, events, ui),
     };
     services.scenes = new SceneManager(() => services, ui.fade);
     this.services = services;

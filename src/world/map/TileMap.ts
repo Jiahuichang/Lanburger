@@ -34,6 +34,9 @@ export interface Interactable {
   topicName?: string;
   /** Doors that lead somewhere. */
   warp?: { to: string; spawn: string };
+  /** Doors: the building, and its text once unlocked. */
+  buildingId?: string;
+  openBody?: string;
   /** Activities (kind 'activity'). */
   activity?: 'practice';
 }
@@ -144,6 +147,8 @@ export class TileMap {
             promptY: py - 40,
             title: o.name,
             body: o.blurb,
+            buildingId: o.id,
+            openBody: o.openBlurb,
             warp: o.enter,
           });
           if (o.enter) {

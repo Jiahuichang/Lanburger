@@ -6,6 +6,7 @@ import { t } from '../i18n';
 import { ENERGY_MAX } from '../save/schema';
 import { LessonSession, type Mode } from './LessonSession';
 import { due, graded, learned, taught, vocabKey } from './Srs';
+import { XP } from '../progress/Progression';
 
 /** Energy a finished Practice Corner round gives back (PROGRESSION_SYSTEM §3). */
 export const PRACTICE_REWARD = 5;
@@ -51,7 +52,38 @@ export class LearningDirector {
         if (topic.lessons.every((l) => d.flags[`lesson:${l.id}`])) d.flags[`topic:${topicId}`] = true;
       });
       this.s.save.flush();
+      this.s.progress.gainXp(XP.lesson);
+      this.s.progress.refresh();
     }
+    return done;
+  }
+
+  /**
+   * A townsperson chats with the player using a topic's phrases (reply questions, no energy cost).
+   * Finishing sets "practiced:<topic>" for quests.
+   */
+  async runChat(topicId: string, partner: Teacher): Promise<boolean> {
+    const topic = TOPICS[topicId];
+    const { targetLanguage: target, supportLanguage: support } = this.s.save.data.profile;
+    const pack = topic && packFor(topicId, target);
+    if (!topic || !pack) return false;
+    const session = new LessonSession({
+      mode: 'chat',
+      topic,
+      pack,
+      target,
+      support,
+      texts: SUPPORT_TEXTS[support],
+      speaker: partner.name,
+      ...this.recorders('chat'),
+    });
+    const done = await this.s.ui.lesson.open(session, { title: t('learn.chatTitle', { name: partner.name }), target, support, teacher: partner, doneLabel: t('learn.chatDone') });
+    if (done) {
+      this.s.save.update((d) => void (d.flags[`practiced:${topicId}`] = true));
+      this.s.progress.gainXp(XP.reviewRound);
+      this.s.progress.refresh();
+    }
+    this.s.save.flush();
     return done;
   }
 
@@ -59,7 +91,7 @@ export class LearningDirector {
    * Review (Learn button: due items, free) or practice (Practice Corner: any learned items, free,
    * and finishing restores energy). Returns false when there is nothing to study yet.
    */
-  async runReview(mode: Exclude<Mode, 'lesson'>, teacher?: Teacher): Promise<boolean> {
+  async runReview(mode: 'review' | 'practice', teacher?: Teacher): Promise<boolean> {
     const { targetLanguage: target, supportLanguage: support } = this.s.save.data.profile;
     const vocab = this.s.save.data.vocabulary;
     const known = learned(vocab, target);
@@ -89,6 +121,7 @@ export class LearningDirector {
     });
     const title = mode === 'practice' ? t('learn.practiceTitle') : t('learn.reviewTitle');
     const done = await this.s.ui.lesson.open(session, { title, target, support, teacher });
+    if (done) this.s.progress.gainXp(XP.reviewRound);
     if (done && mode === 'practice') {
       const before = this.s.save.data.stats.energy;
       this.s.save.update((d) => {
@@ -98,6 +131,7 @@ export class LearningDirector {
       if (gained > 0) this.s.ui.toast(t('energy.restored', { n: gained }));
     }
     this.s.save.flush();
+    if (done) this.s.progress.refresh();
     return done;
   }
 
@@ -114,6 +148,9 @@ export class LearningDirector {
           const k = vocabKey(target, item);
           d.vocabulary[k] = graded(taught(d.vocabulary[k], item, Date.now()), correct, Date.now());
         }, false),
+      // XP for answers (PROGRESSION_SYSTEM §4): halved in a lesson taken at zero energy (practice mode, §3)
+      onSolve: (firstTry: boolean) =>
+        this.s.progress.gainXp(firstTry ? XP.correctFirstTry : XP.correctAfterRetry, mode === 'lesson' && this.s.save.data.stats.energy <= 0),
       onMiss: () => {
         if (mode !== 'lesson') return;
         this.s.save.update((d) => {

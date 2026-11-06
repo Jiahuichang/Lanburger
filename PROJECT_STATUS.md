@@ -1,14 +1,15 @@
 # Project Status — Lanburger
 
-_Last updated: 2026-11-05_
+_Last updated: 2026-11-06_
 
 ## TL;DR
 
 - **Game:** Lanburger, a story-driven, top-down, pixel-art language RPG in **Hello Town**. The plan is
   `docs/IMPLEMENTATION_PLAN.md` (all decisions approved).
-- **Phase:** R1–R3 are done, and **R4 (learning engine) is done**: Maggie's 3 Greetings lessons in 5 languages, with
-  explanations in English or zh-TW, Leitner review, energy and the Practice Corner. Next: **R5, quests and growth**
-  (XP, level, Word Lanterns, toppings, quest tracker). That completes the vertical slice.
+- **Phase:** R1–R5 are done. **The Hello Town vertical slice is complete**: the main quest "Welcome to Hello Town!"
+  takes a new player from the Mayor through Maggie's Greetings lessons and a chat with Remy to lighting the first
+  Word Lantern. That earns XP and levels, Lettuce, and opens the Burger Bistro. Next: **R6**, the other 4 Hello Town
+  topics, building interiors, side quests and friend NPCs.
 - **Build:** ✅ `npm run build` passes. Every push to `main` deploys to GitHub Pages.
 - **New in R2:**
   - Tile transitions (grass edges, rounded corners, river banks, forest edges, bridge rails), animated water,
@@ -42,7 +43,7 @@ Needs Node 20.19+ or 22.12+ (required by Vite 8).
 
 Then in Claude Code:
 
-> Read CLAUDE.md, PROJECT_STATUS.md and docs/IMPLEMENTATION_PLAN.md. Continue with R2.
+> Read CLAUDE.md, PROJECT_STATUS.md and docs/IMPLEMENTATION_PLAN.md. Continue with R6.
 
 Useful URLs:
 - `/?touch=1`: force the touch controls.
@@ -61,14 +62,32 @@ Useful URLs:
 2. Optional, and only with the user's OK because it needs permission to launch Chrome: run `npm run playtest`.
    The script was rewritten for top-down play (about 18 checks) but **has not been run yet**.
 
-## R5: what comes next (see IMPLEMENTATION_PLAN §5–6, PROGRESSION_SYSTEM)
+## R6: what comes next (see IMPLEMENTATION_PLAN §5, WORLD_MAP)
 
-- Quest system and tracker panel: Main Quest "Welcome to Hello Town!" (talk to the Mayor, explore 3 places,
-  finish Greetings, report back).
-- XP for answers, lessons and quest steps; level ups (full energy refill, celebration).
-- Topic mastery stars. Lighting the Greetings Word Lantern, which unlocks Burger Bistro. Lanburger earns Lettuce.
-- Minimap, and the Quests, Bag and Collection buttons.
-- Native-speaker review of the Greetings packs (`src/content/learning/greetings/*.ts`, `reviewed: false`).
+- The other 4 Hello Town topics (Food & Ordering, Shopping, Directions, Everyday Talk), each with content packs in 5
+  languages.
+- Interiors for the Burger Bistro, General Store and Racing Garage, each with its teacher and a building quest that
+  lights its lantern and earns its topping (Cheese, Tomato, Pickle, Onion).
+- Side quests from the townsfolk (the tracker's Side tab is ready); more for the friend NPCs.
+- Before any of that: a native-speaker review of the Greetings packs (`src/content/learning/greetings/*.ts`,
+  `reviewed: false`).
+
+## R5: what was added
+
+- Quests: `src/quest/QuestSystem.ts` (pure). State steps (explore / visit / learn / practice) are read from save flags,
+  so they can be done early and never go backwards; talk / interact steps count only while current.
+  Content is in `src/content/quests/`.
+- Progress: `src/progress/Progression.ts` (XP table, level ups refill energy, growth stage by level, topic stars) and
+  `ProgressDirector.ts` (applies rules to the save, emits `quest:changed`, `progress:xp`, `progress:level`,
+  `hero:changed`, `lantern:lit`, shows celebrations). It is a service: `services.progress`.
+- Unlocks: `lantern:<topic>`, `topping:<id>`, `building:<id>`. Buildings can have an `openBlurb`.
+- NPC dialogue rules (`NpcDefinition.dialogues`): by flag, by current quest step, or by finished quest. Quest
+  balloons: `!` for the current goal, `?` for a turn-in.
+- Learning: a new `chat` session mode (reply questions with a townsperson, no energy cost), plus XP per answer.
+- UI: `QuestTracker`, `Minimap`, `Celebration` banners, and the `QuestsPanel`, `BagPanel` and `CollectionPanel` sheets.
+  HUD buttons show a red dot when something is new.
+- Save shape unchanged (still v2): quests, flags, inventory, lanterns, topicMastery and burger already existed.
+- Screenshots: `docs/screenshots/r5/`.
 
 ## R4: what was added
 

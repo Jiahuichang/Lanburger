@@ -25,6 +25,25 @@ export const icons = {
   speaker: wrap(
     '<path class="i-fill-paper" d="M4 9.5 H8 L13 5 V19 L8 14.5 H4 Z"/><path class="i-line" d="M16 9 C17.5 10.5 17.5 13.5 16 15 M18.5 6.5 C21.5 9.5 21.5 14.5 18.5 17.5"/>',
   ),
+  levelUp: wrap(
+    '<path class="i-fill-gold" d="M12 3 L19 11 H15 V20 H9 V11 H5 Z"/>',
+  ),
+  lantern: wrap(
+    '<path class="i-line" d="M12 2.5 V5"/><path class="i-fill-wood" d="M8 5 H16 L15 7 H9 Z"/><path class="i-fill-gold" d="M8.5 7 H15.5 L16.5 17 H7.5 Z"/><path class="i-fill-wood" d="M7 17 H17 V19.5 H7 Z"/>',
+  ),
+  leaf: wrap(
+    '<path class="i-fill-green" d="M4.5 19.5 C4 11 9 4.5 19.5 4.5 C19.5 14 14 19.5 4.5 19.5 Z"/><path class="i-line" d="M5 19 C9 15 12 11 16 8"/>',
+  ),
+  door: wrap(
+    '<path class="i-fill-wood" d="M6 21 V7 C6 4.5 8.5 3 12 3 C15.5 3 18 4.5 18 7 V21 Z"/><circle class="i-fill-gold" cx="15" cy="13" r="1.4"/>',
+  ),
+  badge: wrap(
+    '<path class="i-fill-red" d="M8 2.5 H11 L12 8 L13 2.5 H16 L14.5 9 H9.5 Z"/><circle class="i-fill-gold" cx="12" cy="15" r="6"/><path class="i-fill-paper" d="M12 11.5 L13 14 L15.5 14.2 L13.6 15.8 L14.2 18.3 L12 17 L9.8 18.3 L10.4 15.8 L8.5 14.2 L11 14 Z"/>',
+  ),
+  coin: wrap(
+    '<circle class="i-fill-gold" cx="12" cy="12" r="8.5"/><circle class="i-line" cx="12" cy="12" r="5.5"/><path class="i-fill-wood" d="M10.5 9.5 C10.5 9 11 8.5 12 8.5 C13 8.5 13.5 9 13.5 9.5 C13.5 10 13 10.5 12 10.5 C11 10.5 10.5 10 10.5 9.5 Z"/>',
+  ),
+  check: wrap('<path class="i-line i-thick" d="M5.5 12.5 L10 17 L18.5 7.5"/>'),
   close: wrap('<path class="i-line i-thick" d="M7 7 L17 17 M17 7 L7 17"/>'),
   pin: wrap('<path class="i-fill-red" d="M12 21 C8 16 5.5 12.5 5.5 9.5 C5.5 6 8.5 3.5 12 3.5 C15.5 3.5 18.5 6 18.5 9.5 C18.5 12.5 16 16 12 21 Z"/><circle class="i-fill-paper" cx="12" cy="9.5" r="2.5"/>'),
   rotate: wrap(

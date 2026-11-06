@@ -6,7 +6,7 @@ import type { SupportLanguage, TargetLanguage } from './types';
  * Pure logic: the UI shows `step`, calls `answer()` / `next()`, and the session reports grades and
  * energy costs through callbacks so the save stays outside.
  */
-export type Mode = 'lesson' | 'review' | 'practice';
+export type Mode = 'lesson' | 'review' | 'practice' | 'chat';
 
 export interface Choice {
   /** Item id this choice stands for. */
@@ -60,6 +60,8 @@ export interface SessionOptions {
   rand?: () => number;
   /** First attempt on a question: grade the item for spaced repetition. */
   onGrade?: (item: string, correct: boolean) => void;
+  /** A question was answered correctly (`firstTry`: with no miss), for XP. */
+  onSolve?: (firstTry: boolean) => void;
   /** A wrong answer that costs energy (lessons only). */
   onMiss?: () => void;
   /** An item was taught (example shown). */
@@ -128,6 +130,7 @@ export class LessonSession {
     this.attempts++;
     if (correct) {
       this.solved = true;
+      this.o.onSolve?.(this.attempts === 1);
       return { correct: true, revealed: false, disabled: this.disabledIds };
     }
     if (this.o.mode === 'lesson') this.o.onMiss?.();
@@ -160,6 +163,13 @@ export class LessonSession {
       for (const p of L.pairs) qs.push(this.replyQ(p.line, p.reply, p.wrong));
       for (const q of qs) this.steps.push({ kind: 'question', q });
       this.steps.push({ kind: 'complete', items: L.items.map((id) => ({ form: this.form(id), meaning: this.meaning(id) })), text: fill(t.complete, { n: L.items.length }) });
+    } else if (o.mode === 'chat') {
+      // a townsperson tries your new phrases: reply questions from every lesson of the topic
+      const pairs = this.shuffle(o.topic.lessons.flatMap((l) => l.pairs)).slice(0, 4);
+      this.steps.push({ kind: 'intro', text: fill(t.chatIntro, { name: o.speaker }), alert: o.introNote });
+      for (const p of pairs) this.steps.push({ kind: 'question', q: this.replyQ(p.line, p.reply, p.wrong) });
+      const items = [...new Set(pairs.map((p) => p.reply))];
+      this.steps.push({ kind: 'complete', items: items.map((id) => ({ form: this.form(id), meaning: this.meaning(id) })), text: fill(t.chatDone, { name: o.speaker }) });
     } else {
       const items = this.shuffle([...(o.items ?? [])]).slice(0, 6);
       this.steps.push({ kind: 'intro', text: o.mode === 'practice' ? fill(t.practiceIntro, { n: 5 }) : t.reviewIntro, alert: o.introNote });

@@ -66,6 +66,9 @@ export interface SupportTexts {
   reviewIntro: string;
   practiceIntro: string;
   outOfEnergy: string;
+  /** A townsperson wants to chat with your new phrases ({name}). */
+  chatIntro: string;
+  chatDone: string;
 }
 
 /** Fill {placeholders} in an explanation template. */

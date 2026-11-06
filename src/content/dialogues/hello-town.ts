@@ -29,13 +29,13 @@ const graphs: DialogueGraph[] = [
       e: {
         speaker: 'mayor-bun',
         expression: 'happy',
-        text: 'Visit Maggie at the Language Academy, the red-roofed building to the west. She will teach you your very first words.',
+        text: 'First, take a look around: the Language Academy, the Burger Bistro and the General Store. Then visit Maggie at the Academy. She will teach you your very first words.',
         set: 'met-mayor',
       },
       f: {
         speaker: 'mayor-bun',
         expression: 'celebrating',
-        text: "Ha! Wonderful. Then let's add a few more languages. Off to the Language Academy with you, Maggie is waiting!",
+        text: "Ha! Wonderful. Then let's add a few more languages. Have a look around town, then off to the Language Academy. Maggie is waiting!",
         set: 'met-mayor',
       },
     },
@@ -45,6 +45,70 @@ const graphs: DialogueGraph[] = [
     start: 'a',
     lines: {
       a: { speaker: 'mayor-bun', expression: 'happy', text: 'Maggie at the Language Academy will help you. Good luck, Lanburger! The whole town is counting on you.' },
+    },
+  },
+  {
+    id: 'mayor-bun.explore',
+    start: 'a',
+    lines: {
+      a: {
+        speaker: 'mayor-bun',
+        expression: 'happy',
+        text: 'Take a stroll first! Peek at the Language Academy, the Burger Bistro and the General Store. The little map in the corner will guide you.',
+      },
+    },
+  },
+  {
+    id: 'mayor-bun.chat',
+    start: 'a',
+    lines: {
+      a: {
+        speaker: 'mayor-bun',
+        expression: 'celebrating',
+        text: "You finished Maggie's lessons? Splendid! Now try your new words on someone. Remy is sketching by the fountain.",
+      },
+    },
+  },
+  {
+    id: 'mayor-bun.report',
+    start: 'a',
+    lines: {
+      a: { speaker: 'mayor-bun', expression: 'surprised', text: 'Lanburger! I heard you chatting with Remy. Real words, in a real language!', next: 'b' },
+      b: { speaker: 'lanburger', expression: 'happy', text: 'Bun! (I learned my greetings!)', next: 'c' },
+      c: {
+        speaker: 'mayor-bun',
+        expression: 'celebrating',
+        text: 'Then let us light the first Word Lantern together. Look at the plaza... Greetings, shine again!',
+        set: 'lantern-ceremony',
+      },
+    },
+  },
+  {
+    id: 'mayor-bun.thanks',
+    start: 'a',
+    lines: {
+      a: {
+        speaker: 'mayor-bun',
+        expression: 'happy',
+        text: 'One lantern down, four to go! The Burger Bistro has opened its doors. Go and say hello, I hear the food is excellent.',
+      },
+    },
+  },
+  {
+    id: 'remy.chat',
+    start: 'a',
+    lines: {
+      a: { speaker: 'remy', expression: 'happy', text: "Oh, hey! Mayor Bun says you're learning greetings. Want to try them on me?", next: 'b' },
+      b: {
+        speaker: 'remy',
+        expression: 'celebrating',
+        text: "I'll say something, you answer. No pressure. I'm terrible at this too.",
+        choices: [
+          { text: "Let's chat!", action: 'chat:greetings' },
+          { text: 'Maybe later.', next: 'c' },
+        ],
+      },
+      c: { speaker: 'remy', expression: 'happy', text: "Sure! I'll be right here, drawing burgers." },
     },
   },
   {
@@ -102,6 +166,24 @@ const graphs: DialogueGraph[] = [
         speaker: 'maggie',
         expression: 'celebrating',
         text: "Hi hi! I've been practicing 'hello' in five languages all morning. My cat is very tired of me.",
+      },
+    },
+  },
+  {
+    id: 'maggie.lesson-done',
+    start: 'a',
+    lines: {
+      a: { speaker: 'maggie', expression: 'celebrating', text: 'Great job, Lanburger! Come back for the next lesson whenever you are ready.' },
+    },
+  },
+  {
+    id: 'maggie.topic-done',
+    start: 'a',
+    lines: {
+      a: {
+        speaker: 'maggie',
+        expression: 'celebrating',
+        text: "You finished every Greetings lesson! Now go and use them on someone. Remy by the fountain loves a chat. Then tell Mayor Bun!",
       },
     },
   },

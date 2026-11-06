@@ -15,10 +15,14 @@ export const NPCS: NpcDefinition[] = [
     sprite: 'mayor-bun',
     portrait: 'mayor-bun',
     dialogueId: 'mayor-bun.welcome',
-    questHooks: ['welcome-to-hello-town'],
     greeting: "Welcome to Hello Town, Lanburger! Our Word Lanterns have gone dark... Look around, and come back to me soon.",
+    dialogues: [
+      { questDone: 'welcome-to-hello-town', id: 'mayor-bun.thanks' },
+      { step: 'welcome-to-hello-town/report', id: 'mayor-bun.report' },
+      { step: 'welcome-to-hello-town/explore', id: 'mayor-bun.explore' },
+      { step: 'welcome-to-hello-town/chat', id: 'mayor-bun.chat' },
+    ],
     dialogueAfter: { flag: 'met-mayor', id: 'mayor-bun.after' },
-    questDoneFlag: 'met-mayor',
   },
   {
     id: 'jeremy',
@@ -70,10 +74,8 @@ export const NPCS: NpcDefinition[] = [
     sprite: 'maggie',
     portrait: 'maggie',
     dialogueId: 'maggie.welcome',
-    questHooks: ['greetings-lesson'],
     greeting: "Hi hi, welcome! I'm Maggie, the teacher here! Our first class is almost ready. Oh, I'm so excited I could talk all day... and I probably will!",
     dialogueAfter: { flag: 'met-maggie', id: 'maggie.after' },
-    questDoneFlag: 'met-maggie',
     wander: 1,
   },
 
@@ -88,6 +90,7 @@ export const NPCS: NpcDefinition[] = [
     sprite: 'remy',
     portrait: 'remy',
     dialogueId: 'remy.smalltalk',
+    dialogues: [{ step: 'welcome-to-hello-town/chat', id: 'remy.chat' }],
     greeting: "Oh, hey! I'm sketching the fountain. Wanna see? ...Okay, it turned into a burger. Sorry.",
   },
   {

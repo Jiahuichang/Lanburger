@@ -18,6 +18,8 @@ export const SUPPORT_TEXTS: Record<SupportLanguage, SupportTexts> = {
     reviewIntro: 'Quick review! These phrases are ready to practice again.',
     practiceIntro: 'Practice Corner: free practice. Finish a round to restore {n} energy.',
     outOfEnergy: 'Out of energy, so this is practice mode: answers still count, and nothing is lost.',
+    chatIntro: '{name} wants to try out your new greetings! Pick the best reply each time.',
+    chatDone: 'Great chat! {name} understood every word.',
   },
   'zh-TW': {
     promptMeaning: '這句是什麼意思？',
@@ -31,6 +33,8 @@ export const SUPPORT_TEXTS: Record<SupportLanguage, SupportTexts> = {
     reviewIntro: '快速複習！這些句子可以再練習一次了。',
     practiceIntro: 'Practice Corner：免費練習。完成一輪可以恢復 {n} 點體力。',
     outOfEnergy: '體力用完了，現在是練習模式：答題一樣會算進度，也不會失去任何東西。',
+    chatIntro: '{name} 想試試你剛學會的招呼語！每次選出最適合的回答。',
+    chatDone: '聊得真好！{name} 每句都聽懂了。',
   },
 };
 

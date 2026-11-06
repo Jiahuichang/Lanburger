@@ -15,6 +15,8 @@ export interface LessonOpenOptions {
   target: TargetLanguage;
   support: SupportLanguage;
   teacher?: { name: string; portrait?: LoadedPortrait };
+  /** Heading on the last card (default: "Lesson complete!" / "Review complete!"). */
+  doneLabel?: string;
 }
 
 /**
@@ -28,8 +30,11 @@ export class LessonPanel {
   private session: LessonSession | null = null;
   private opts!: LessonOpenOptions;
   private resolve: ((completed: boolean) => void) | null = null;
-  private feedback: { correct: boolean; text?: string } | null = null;
+  private feedback: { correct: boolean; text?: string; xp?: number } | null = null;
   private openedAt = 0;
+  /** XP earned by the last answer and during this session (shown on the cards). */
+  private lastXp = 0;
+  private earned = 0;
 
   constructor(parent: HTMLElement, private s: Services) {
     this.el = document.createElement('div');
@@ -49,6 +54,11 @@ export class LessonPanel {
     this.el.querySelector('.lesson-x')!.addEventListener('click', () => this.close(false));
     window.addEventListener('keydown', (e) => this.onKey(e));
     s.save.onChange(() => this.renderEnergy());
+    s.events.on('progress:xp', ({ amount }) => {
+      if (!this.session) return;
+      this.lastXp += amount;
+      this.earned += amount;
+    });
   }
 
   get isOpen(): boolean {
@@ -60,6 +70,7 @@ export class LessonPanel {
     this.session = session;
     this.opts = opts;
     this.feedback = null;
+    this.earned = 0;
     this.openedAt = performance.now();
     this.s.input.enabled = false;
     document.body.classList.add('is-talking');
@@ -152,7 +163,9 @@ export class LessonPanel {
         box.append(grid);
         if (this.feedback) {
           const fb = div(`lesson-feedback ${this.feedback.correct ? 'is-right' : 'is-wrong'}`);
-          fb.append(div('lesson-feedback-title', this.feedback.correct ? t('lesson.correct') : t('lesson.notQuite')));
+          const title = div('lesson-feedback-title', this.feedback.correct ? t('lesson.correct') : t('lesson.notQuite'));
+          if (this.feedback.xp) title.append(div('lesson-xp', t('xp.gain', { n: this.feedback.xp })));
+          fb.append(title);
           if (this.feedback.text) fb.append(support(this.feedback.text, this.opts.support, 'lesson-feedback-text'));
           box.append(fb);
         }
@@ -160,7 +173,8 @@ export class LessonPanel {
         break;
       }
       case 'complete': {
-        box.append(div('lesson-kicker', st.text ? t('lesson.complete') : t('lesson.reviewDone')));
+        box.append(div('lesson-kicker', this.opts.doneLabel ?? (st.text ? t('lesson.complete') : t('lesson.reviewDone'))));
+        if (this.earned > 0) box.append(div('lesson-xp-total', t('xp.gain', { n: this.earned })));
         if (st.text) box.append(support(st.text, this.opts.support, 'lesson-text'));
         const list = div('lesson-summary');
         for (const it of st.items) {
@@ -215,8 +229,9 @@ export class LessonPanel {
   private pick(id: string): void {
     const ses = this.session;
     if (!ses || ses.step.kind !== 'question' || this.feedback?.correct) return;
+    this.lastXp = 0;
     const r = ses.answer(id);
-    this.feedback = { correct: r.correct, text: r.explanation };
+    this.feedback = { correct: r.correct, text: r.explanation, xp: this.lastXp };
     this.render();
   }
 

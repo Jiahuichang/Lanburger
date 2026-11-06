@@ -65,6 +65,8 @@ export interface BuildingObject {
   name: string;
   /** Short English description shown at the door. */
   blurb: string;
+  /** Shown instead of `blurb` once the building is unlocked (save.unlockedBuildings). */
+  openBlurb?: string;
   style: BuildingStyle;
   /** Left edge (tiles). */
   x: number;

@@ -81,6 +81,7 @@ export const helloTown: MapSource = {
     {
       type: 'building', id: 'burger-bistro', style: 'bistro', name: 'Burger Bistro', x: 60, y: 17, w: 12, depth: 4,
       blurb: 'Food & ordering. Closed for prep — visit the Language Academy first!',
+      openBlurb: 'Now open! The chef is warming up the grill. Food & Ordering lessons arrive in the next update.',
     },
     {
       type: 'building', id: 'general-store', style: 'store', name: 'General Store', x: 8, y: 37, w: 12, depth: 4,

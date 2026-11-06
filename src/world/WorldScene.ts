@@ -19,6 +19,10 @@ import { assets, type SpriteImage } from '../assets/AssetRegistry';
 import { placeSprite } from '../render/sprites';
 import { t } from '../i18n';
 import { START_MAP } from '../save/schema';
+import { QUESTS } from '../content/quests';
+import { currentGoals, isCurrentStep } from '../quest/QuestSystem';
+import { lanternsOn } from '../content/places';
+import type { MapMarker } from '../ui/Minimap';
 import { ActorView } from '../render/ActorView';
 import { LightLayer } from '../render/LightLayer';
 import { TileMapView } from '../render/TileMapView';
@@ -27,6 +31,8 @@ import { MOVE, TopDownMover, type Collider } from './TopDownMover';
 
 const EMOTE_SECONDS = { celebrate: 0.6, incorrect: 0.9, talk: 0.8, learn: 1.2 } as const;
 const PLAYER_ID = 'player';
+/** Walking this close (map px) to a building's door counts as exploring it. */
+const EXPLORE_RADIUS = 44;
 
 /** Where to put the player when arriving through a door (scene params). */
 export interface WarpParams {
@@ -67,7 +73,7 @@ export class WorldScene implements Scene {
   private view!: ActorView;
   private npcs: NpcActor[] = [];
   private pets: PetActor[] = [];
-  private balloons!: { quest: SpriteImage; chat: SpriteImage };
+  private balloons!: { quest: SpriteImage; turnIn: SpriteImage; chat: SpriteImage };
   private time = 0;
   private cam = { x: 0, y: 0 };
   private nearby: Interactable | null = null;
@@ -82,6 +88,10 @@ export class WorldScene implements Scene {
   private learning!: LearningDirector;
   /** A lesson, review or conversation is running. */
   private busy = false;
+  /** NPC ids the current quest steps point at ('!' or '?' for a turn-in). */
+  private goalNpcs = new Map<string, 'quest' | 'turnIn'>();
+  private goalTimer = 0;
+  private chromeShown = true;
 
   async enter(ctx: SceneContext): Promise<void> {
     this.s = ctx.services;
@@ -101,6 +111,7 @@ export class WorldScene implements Scene {
     );
     this.scene.add(this.lights.object);
     for (const id of save.lanterns) this.setLantern(`lantern-${id}`, true);
+    this.s.save.update((d) => void (d.flags[`visited:${this.map.id}`] = true), false);
 
     const saved = save.location.mapId === this.map.id && Number.isFinite(save.location.x) ? save.location : null;
     const start = warp ? this.map.spawn(warp.spawn) : (rp ?? saved ?? this.map.spawn());
@@ -111,14 +122,11 @@ export class WorldScene implements Scene {
     }
     this.playerCollider = withBodies(this.map, () => this.bodies(), PLAYER_ID);
 
-    const preview = this.s.flags.heroPreview;
-    const stage = (['slider', 'classic', 'double', 'deluxe'] as const).find((st) => st === preview?.stage) ?? save.burger.stage;
-    const hero = await loadHeroSprite(stage, preview?.toppings ?? save.burger.equipped);
-    this.view = new ActorView(hero);
+    this.view = new ActorView(await this.heroSprite());
     this.scene.add(this.view.object);
     this.s.ui.hud.setPortrait(await loadHeroPortrait(), 'neutral');
     await this.spawnNpcs();
-    this.s.ui.hud.setLocation(this.map.name);
+    this.s.ui.minimap.setMap(this.map, save.lanterns, this.lanternCount());
 
     this.cam = { x: this.player.x, y: this.player.y - 16 };
     if (this.s.flags.debug) this.buildDebug();
@@ -127,7 +135,13 @@ export class WorldScene implements Scene {
     this.learning = new LearningDirector(this.s);
     this.unsub.push(this.s.events.on('language:changed', () => this.refreshPrompt(true)));
     this.unsub.push(this.s.events.on('ui:learn', () => void this.study('review')));
+    this.unsub.push(this.s.events.on('hero:changed', () => void this.reloadHero()));
+    this.unsub.push(this.s.events.on('lantern:lit', ({ topic }) => this.onLanternLit(topic)));
+    this.unsub.push(this.s.events.on('quest:changed', () => this.refreshGoals()));
     if (!warp) this.s.ui.hud.showHint(true);
+    // start the first quest, count this visit, and catch up on anything done before quests existed
+    this.s.progress.refresh();
+    this.refreshGoals();
   }
 
   exit(): void {
@@ -145,7 +159,7 @@ export class WorldScene implements Scene {
 
   update(dt: number): void {
     const input = this.s.input.state;
-    if (input.menuPressed && !this.s.ui.dialogue.isOpen) this.s.ui.settings.toggle();
+    if (input.menuPressed && !this.s.ui.dialogue.isOpen && (this.s.ui.settings.isOpen || !this.s.ui.anyPanelOpen)) this.s.ui.settings.toggle();
 
     if (this.s.flags.debug && input.debugKey) this.player.playEmote(ANIM_STATES[input.debugKey - 1], 1.5);
 
@@ -180,6 +194,13 @@ export class WorldScene implements Scene {
     const w = this.warpUnderPlayer(input.moveX, -input.moveY);
     if (w) this.useWarp(w.to, w.spawn);
 
+    this.checkExplored();
+    this.goalTimer += dt;
+    if (this.goalTimer > 0.5) {
+      this.goalTimer = 0;
+      this.refreshGoals();
+    }
+
     this.saveTimer += dt;
     if (this.saveTimer > 1) {
       this.saveTimer = 0;
@@ -194,7 +215,6 @@ export class WorldScene implements Scene {
     this.view.play(p.animState, p.facing);
     this.view.update(frameDt, x, y);
     this.time += frameDt;
-    const flags = this.s.save.data.flags;
     for (const n of this.npcs) {
       const m = n.brain.mover;
       const nx = m.prevX + (m.x - m.prevX) * alpha;
@@ -202,7 +222,8 @@ export class WorldScene implements Scene {
       const talking = this.talkingTo === n.interactable.id;
       n.view.play(n.brain.animState(talking), n.brain.facing);
       n.view.update(frameDt, nx, ny);
-      this.setBalloon(n, n.def.questHooks?.length && !(n.def.questDoneFlag && flags[n.def.questDoneFlag]) ? 'quest' : 'chat');
+      const goal = this.goalNpcs.get(n.def.id);
+      this.setBalloon(n, goal === 'turnIn' ? 'turnIn' : goal ? 'quest' : 'chat');
       n.balloon.visible = !talking;
       n.balloon.position.set(Math.round(nx), -Math.round(ny - 50 + Math.round(Math.sin(this.time * 3) * 1.5)), n.balloon.position.z);
     }
@@ -224,6 +245,13 @@ export class WorldScene implements Scene {
     this.lights.update(frameDt);
     this.mapView.update(frameDt);
     this.refreshPrompt(false);
+    this.s.ui.minimap.update(x, y);
+    const chrome = !this.busy && !this.s.ui.dialogue.isOpen && !this.s.ui.lesson.isOpen;
+    if (chrome !== this.chromeShown) {
+      this.chromeShown = chrome;
+      this.s.ui.tracker.setVisible(chrome);
+      this.s.ui.minimap.setVisible(chrome);
+    }
     px.render(this.scene, this.camera, this.cam.x, this.cam.y);
   }
 
@@ -238,6 +266,7 @@ export class WorldScene implements Scene {
   private interact(it: Interactable): void {
     this.player.facing = facingFromVector(it.x - this.player.x, it.y - this.player.y, this.player.facing);
     this.s.events.emit('player:interacted', { targetId: it.id });
+    if (it.kind !== 'npc') this.s.progress.refresh({ type: 'interact', target: it.id });
     if (it.warp) {
       this.useWarp(it.warp.to, it.warp.spawn);
       return;
@@ -281,6 +310,8 @@ export class WorldScene implements Scene {
     // story flags matter: write them now rather than waiting for the autosave
     this.s.save.flush();
     this.busy = false;
+    const npc = this.npcs.find((x) => x.interactable === it);
+    if (npc) this.s.progress.refresh({ type: 'talk', target: npc.def.id });
     for (const action of runner.actions) await this.runAction(action, it);
   }
 
@@ -289,19 +320,38 @@ export class WorldScene implements Scene {
     if (pet) return { id: `pet.${pet.name}`, start: 'a', lines: { a: { speaker: pet.interactable.id, text: pet.line } } };
     const n = this.npcs.find((x) => x.interactable === it);
     if (!n) return null;
+    const d = this.s.save.data;
+    const rule = n.def.dialogues?.find(
+      (r) =>
+        (!r.flag || !!d.flags[r.flag]) &&
+        (!r.step || isCurrentStep(QUESTS, d, r.step)) &&
+        (!r.questDone || d.quests[r.questDone]?.status === 'complete') &&
+        (r.flag || r.step || r.questDone) &&
+        DIALOGUES[r.id],
+    );
     const after = n.def.dialogueAfter;
-    const id = after && this.s.save.data.flags[after.flag] ? after.id : n.def.dialogueId;
+    const id = rule ? rule.id : after && d.flags[after.flag] ? after.id : n.def.dialogueId;
     return (
       DIALOGUES[id] ??
       (n.def.greeting ? { id: `${n.def.id}.greeting`, start: 'a', lines: { a: { speaker: n.def.id, text: n.def.greeting } } } : null)
     );
   }
 
-  /** Actions requested by a conversation: "lesson:<topic>/<lesson>" or "practice". */
+  /** Actions requested by a conversation: "lesson:<topic>/<lesson>", "chat:<topic>" or "practice". */
   private async runAction(action: string, it: Interactable): Promise<void> {
     const teacher = await this.teacherFor(it);
     if (action === 'practice') {
       await this.study('practice', teacher);
+      return;
+    }
+    const chat = /^chat:([\w-]+)$/.exec(action);
+    if (chat) {
+      this.busy = true;
+      this.player.emote = 'learn';
+      const done = await this.learning.runChat(chat[1], teacher);
+      this.player.emote = null;
+      this.busy = false;
+      if (done) this.player.playEmote('celebrate', EMOTE_SECONDS.celebrate);
       return;
     }
     const m = /^lesson:([\w-]+)\/([\w-]+)$/.exec(action);
@@ -316,18 +366,10 @@ export class WorldScene implements Scene {
     // the teacher's closing line
     const finishedTopic = !!this.s.save.data.flags[`topic:${m[1]}`];
     const npcId = it.id.replace(/^npc:/, '');
-    const closing: DialogueGraph = {
+    const closing: DialogueGraph = DIALOGUES[`${npcId}.${finishedTopic ? 'topic-done' : 'lesson-done'}`] ?? {
       id: `${npcId}.after-lesson`,
       start: 'a',
-      lines: {
-        a: {
-          speaker: npcId,
-          expression: 'celebrating',
-          text: finishedTopic
-            ? "You finished every Greetings lesson! Go tell Mayor Bun. She'll be so proud of you!"
-            : 'Great job, Lanburger! Come back for the next lesson whenever you are ready.',
-        },
-      },
+      lines: { a: { speaker: npcId, expression: 'celebrating', text: 'Great job, Lanburger!' } },
     };
     const speakers = await this.speakersFor(closing);
     this.busy = true;
@@ -375,6 +417,90 @@ export class WorldScene implements Scene {
     return out;
   }
 
+  // ───────────────────────── progress
+
+  /** First time near a building's door: mark it explored (quests, minimap). */
+  private checkExplored(): void {
+    const flags = this.s.save.data.flags;
+    for (const b of this.map.buildings) {
+      if (flags[`explored:${b.id}`]) continue;
+      const dx = this.player.x - (b.px + b.pw / 2);
+      const dy = this.player.y - (b.py + 8);
+      if (dx * dx + dy * dy > EXPLORE_RADIUS * EXPLORE_RADIUS) continue;
+      this.s.save.update((d) => void (d.flags[`explored:${b.id}`] = true), false);
+      this.s.events.emit('place:explored', { id: b.id });
+      this.s.ui.toast(t('explore.found', { name: b.name }));
+      this.s.progress.refresh();
+    }
+  }
+
+  /** Which NPCs get a quest balloon, and where the minimap points (PROGRESSION_SYSTEM §2.4). */
+  private refreshGoals(): void {
+    const d = this.s.save.data;
+    const goals = currentGoals(QUESTS, d);
+    this.goalNpcs.clear();
+    for (const g of goals) if (g.npc && !this.goalNpcs.has(g.npc)) this.goalNpcs.set(g.npc, g.step.turnIn ? 'turnIn' : 'quest');
+    const main = goals[0];
+    const markers: MapMarker[] = [];
+    if (main) {
+      const T = this.map.tile;
+      if (main.npc) {
+        const def = NPCS.find((n) => n.id === main.npc);
+        const live = this.npcs.find((n) => n.def.id === main.npc);
+        if (live) markers.push({ x: live.brain.x, y: live.brain.y });
+        else if (def) {
+          const p = this.pointToward(def.mapId);
+          if (p) markers.push(p);
+          else if (def.mapId === this.map.id) markers.push({ x: def.x * T, y: def.y * T });
+        }
+      }
+      for (const place of main.places) {
+        const b = this.map.buildings.find((x) => x.id === place);
+        if (b) markers.push({ x: b.px + b.pw / 2, y: b.py });
+        else if (place !== this.map.id) {
+          const p = this.pointToward(place);
+          if (p) markers.push(p);
+        }
+      }
+    }
+    this.s.ui.minimap.setMarkers(markers);
+  }
+
+  /** The door or exit on this map that leads to `mapId` (for goals on other maps). */
+  private pointToward(mapId: string): MapMarker | null {
+    if (mapId === this.map.id) return null;
+    const w = this.map.warps.find((x) => x.to === mapId) ?? this.map.warps.find((x) => x.to !== this.map.id);
+    return w ? { x: w.rect.x + w.rect.w / 2, y: w.rect.y + w.rect.h / 2 } : null;
+  }
+
+  private lanternCount(): { n: number; total: number } | undefined {
+    const total = lanternsOn(this.map.id).length;
+    return total ? { n: this.s.save.data.lanterns.length, total } : undefined;
+  }
+
+  private onLanternLit(topic: string): void {
+    this.setLantern(`lantern-${topic}`, true);
+    this.s.ui.minimap.setLit(this.s.save.data.lanterns, this.lanternCount());
+    this.player.playEmote('celebrate', EMOTE_SECONDS.celebrate * 2);
+  }
+
+  private async heroSprite() {
+    const save = this.s.save.data;
+    const preview = this.s.flags.heroPreview;
+    const stage = (['slider', 'classic', 'double', 'deluxe'] as const).find((st) => st === preview?.stage) ?? save.burger.stage;
+    return loadHeroSprite(stage, preview?.toppings ?? save.burger.equipped);
+  }
+
+  /** Lanburger grew or changed toppings: swap the sprite in place. */
+  private async reloadHero(): Promise<void> {
+    const sprite = await this.heroSprite();
+    const old = this.view;
+    this.view = new ActorView(sprite);
+    this.scene.add(this.view.object);
+    this.scene.remove(old.object);
+    old.dispose();
+  }
+
   // ───────────────────────── doors
 
   /** A warp the player is standing in while pushing toward it (so arriving never re-triggers it). */
@@ -415,6 +541,7 @@ export class WorldScene implements Scene {
     const T = this.map.tile;
     this.balloons = {
       quest: assets.sprite('ui.balloon.!', () => paintBalloon('!')),
+      turnIn: assets.sprite('ui.balloon.?', () => paintBalloon('?')),
       chat: assets.sprite('ui.balloon.…', () => paintBalloon('…')),
     };
     let seed = 1;
@@ -455,7 +582,7 @@ export class WorldScene implements Scene {
     return b;
   }
 
-  private setBalloon(n: NpcActor, kind: 'quest' | 'chat'): void {
+  private setBalloon(n: NpcActor, kind: 'quest' | 'turnIn' | 'chat'): void {
     if (n.balloon.userData.kind === kind) return;
     n.balloon.userData.kind = kind;
     (n.balloon.material as THREE.MeshBasicMaterial).map = this.balloons[kind].tex;
@@ -501,7 +628,7 @@ export class WorldScene implements Scene {
     const at = this.s.pixel.worldToCss(it.x, it.promptY, this.cam.x, this.cam.y);
     if (this.bubbleFor) {
       ui.prompt.hide();
-      ui.prompt.showBubble(this.bubbleFor.title, bubbleBody(this.bubbleFor, this.s.save.data.lanterns), at.x, at.y, force);
+      ui.prompt.showBubble(this.bubbleFor.title, bubbleBody(this.bubbleFor, this.s.save.data), at.x, at.y, force);
     } else {
       ui.prompt.show(label!, at.x, at.y, force);
     }
@@ -561,10 +688,11 @@ function promptLabel(it: Interactable): string {
   }
 }
 
-function bubbleBody(it: Interactable, lit: string[]): string {
+function bubbleBody(it: Interactable, d: { lanterns: string[]; unlockedBuildings: string[] }): string {
+  if (it.kind === 'door') return it.buildingId && it.openBody && d.unlockedBuildings.includes(it.buildingId) ? it.openBody : it.body;
   if (it.kind !== 'lantern') return it.body;
   const topic = it.topicName ?? '';
-  return lit.includes(it.id.replace(/^lantern-/, '')) ? t('lantern.lit', { topic }) : t('lantern.dark', { topic });
+  return d.lanterns.includes(it.id.replace(/^lantern-/, '')) ? t('lantern.lit', { topic }) : t('lantern.dark', { topic });
 }
 
 function clampView(c: number, view: number, size: number): number {

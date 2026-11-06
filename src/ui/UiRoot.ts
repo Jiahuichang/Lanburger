@@ -6,6 +6,10 @@ import { SettingsPanel } from './SettingsPanel';
 import { DialogueBox } from './DialogueBox';
 import { LessonPanel } from './LessonPanel';
 import { icons } from './icons';
+import { Celebration, type CelebrationSpec } from './Celebration';
+import { QuestTracker } from './QuestTracker';
+import { Minimap } from './Minimap';
+import { BagPanel, CollectionPanel, QuestsPanel } from './MenuPanels';
 
 /**
  * The HTML overlay. Layers (bottom → top): world prompts, HUD, touch controls, modals,
@@ -22,6 +26,12 @@ export class UiRoot {
   settings!: SettingsPanel;
   dialogue!: DialogueBox;
   lesson!: LessonPanel;
+  tracker!: QuestTracker;
+  minimap!: Minimap;
+  quests!: QuestsPanel;
+  bag!: BagPanel;
+  collection!: CollectionPanel;
+  private celebration: Celebration;
   private rotate: HTMLElement;
   private toastEl: HTMLElement;
   private toastTimer = 0;
@@ -39,6 +49,8 @@ export class UiRoot {
     this.controlsLayer = layer('ui-controls');
     this.modalLayer = layer('ui-modal');
     this.prompt = new Prompt(this.worldLayer);
+    // rewards show above every panel (but under the rotate overlay and the scene fade)
+    this.celebration = new Celebration(layer('ui-celebrate'));
 
     this.rotate = document.createElement('div');
     this.rotate.className = 'rotate-overlay';
@@ -66,16 +78,37 @@ export class UiRoot {
   /** Called once services exist (HUD/settings need save, input, events). */
   bind(services: Services): void {
     this.services = services;
+    this.tracker = new QuestTracker(this.hudLayer, services);
+    this.minimap = new Minimap(this.hudLayer);
     this.hud = new Hud(this.hudLayer, services);
     this.dialogue = new DialogueBox(this.hudLayer, services);
     this.settings = new SettingsPanel(this.modalLayer, services);
     this.lesson = new LessonPanel(this.modalLayer, services);
+    this.quests = new QuestsPanel(this.modalLayer, services);
+    this.bag = new BagPanel(this.modalLayer, services);
+    this.collection = new CollectionPanel(this.modalLayer, services);
+  }
+
+  /** A modal sheet (not the dialogue box) is open. */
+  get anyPanelOpen(): boolean {
+    return !!(this.settings?.isOpen || this.lesson?.isOpen || this.quests?.isOpen || this.bag?.isOpen || this.collection?.isOpen);
+  }
+
+  /** Queue a reward banner. */
+  celebrate(spec: CelebrationSpec): void {
+    this.celebration.push(spec);
+  }
+
+  /** Reward banners still on screen or waiting. */
+  get celebrating(): number {
+    return this.celebration.pending;
   }
 
   /** Re-apply every UI string after a UI-language change. */
   relabel(): void {
     this.relabelStatic();
     this.hud?.refresh();
+    this.tracker?.render();
     this.settings?.relabel();
     this.services?.input.touch.relabel();
   }
