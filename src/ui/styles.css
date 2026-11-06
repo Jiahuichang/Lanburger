@@ -1896,8 +1896,20 @@ select {
 
 @media (max-height: 460px) {
   .quest-tracker {
-    top: calc(var(--safe-t) + var(--gap) + 68px);
-    width: 226px;
+    top: calc(var(--safe-t) + var(--gap) + 70px);
+    width: 210px;
+    padding-bottom: 4px;
+    opacity: 0.94;
+  }
+  .qt-mark {
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
+  }
+  .qt-title > span:nth-child(2) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .qt-tab {
     padding: 3px 6px;
@@ -1907,14 +1919,16 @@ select {
     font-size: 14px;
     padding: 5px 8px 2px;
   }
-  /* phones: only the current step and the next one, on one line each */
+  /* phones: no tabs, just the quest title and the current step, so the map stays visible */
+  .qt-tabs {
+    display: none;
+  }
   .qt-step {
     display: none;
     font-size: 13px;
-    padding: 2px 3px;
+    padding: 1px 3px;
   }
   .qt-step.is-current,
-  .qt-step.is-current + .qt-step,
   .qt-step.is-flash {
     display: grid;
   }
@@ -2079,6 +2093,27 @@ select {
 
 .reduce-motion .spark-burst {
   display: none;
+}
+
+@media (max-height: 460px) {
+  /* the controls hint sits at the bottom middle, between the thumbs, not over the quest tracker */
+  .hud-footer {
+    top: auto;
+    bottom: calc(var(--safe-b) + var(--gap));
+  }
+}
+
+@media (max-height: 360px) {
+  .minimap-view {
+    width: 104px;
+    height: 52px;
+  }
+  .minimap-head {
+    font-size: 11px;
+  }
+  .qt-title {
+    font-size: 13px;
+  }
 }
 
 /* ───────────── art gallery (?gallery=1, dev review page) */
