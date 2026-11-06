@@ -78,6 +78,8 @@ Useful URLs:
     and a migration (§7.2);
   - **decided: tú with townsfolk, friends and Maggie; usted with Mayor Bun and unfamiliar adults; ustedes for
     every plural; vos only as a note;**
+  - **decided: A1 is split.** Hello Town is A1.1 (units 0–8 on its 5 lanterns); a second village is A1.2 (units
+    9–12) (§5.1);
   - the rest of §7 ( how A1 maps to the villages, audio and typed answers,
     who reviews the Spanish);
   - the Airlearn course list and screenshots (originals only, for reference).

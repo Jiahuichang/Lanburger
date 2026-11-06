@@ -86,6 +86,8 @@ Greetings（Academy）──▶ Food（Bistro）──▶ Shopping（Store）─
 
 ## 4. 之後的村莊（擴充，草案）
 
+> 2026-11-06：西班牙文的 A1 分成兩段。Hello Town 負責 A1.1，第二個村莊負責 A1.2（時間與日常、興趣、住處、計畫與天氣）。詳見 `SPANISH_CURRICULUM.md` §5.1。下表的村莊順序和主題，之後要依此重新排。
+
 | 村莊 | 情境 | 主題範例 |
 | ---- | ---- | -------- |
 | Harbor Market | 旅行與市場 | 殺價、問時間、住宿、天氣 |
