@@ -73,7 +73,10 @@ Useful URLs:
     only as notes. A Latin American TTS voice replaces es-ES in R6B. Vocabulary follows **Mexico** (changed from
     pan-Latin American the same day): standard Mexican everyday words, with both forms taught when Mexico uses two.
     Other Latin American forms and Spain's are notes. Voice order: es-MX → es-US → es-419 (§7.1);
-  - the rest of §7 (Lanburger's grammatical gender, tú/usted, how A1 maps to the villages, audio and typed answers,
+  - **decided: the player picks Lanburger's Spanish forms** (-o or -a, e.g. encantado/encantada), and can change it
+    in Settings. Maggie asks before the first gendered word. R6B adds a profile field, which means SAVE_VERSION 3
+    and a migration (§7.2);
+  - the rest of §7 (tú/usted, how A1 maps to the villages, audio and typed answers,
     who reviews the Spanish);
   - the Airlearn course list and screenshots (originals only, for reference).
   The teaching flow (§6) is final only after both arrive.
