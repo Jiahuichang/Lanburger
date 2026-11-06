@@ -70,9 +70,9 @@ Useful URLs:
 
 - R6A (docs only): the audit and syllabus draft are written. Waiting on the user for:
   - **decided 2026-11-06: Latin American Spanish is the main variety.** That means ustedes, seseo, and vos/vosotros
-    only as notes. A Latin American TTS voice replaces es-ES in R6B. Vocabulary is **pan-Latin American**: widely
-    understood words first; where no shared word exists, two common forms are both taught and both accepted;
-    other regional forms are notes (§7.1);
+    only as notes. A Latin American TTS voice replaces es-ES in R6B. Vocabulary follows **Mexico** (changed from
+    pan-Latin American the same day): standard Mexican everyday words, with both forms taught when Mexico uses two.
+    Other Latin American forms and Spain's are notes. Voice order: es-MX → es-US → es-419 (§7.1);
   - the rest of §7 (Lanburger's grammatical gender, tú/usted, how A1 maps to the villages, audio and typed answers,
     who reviews the Spanish);
   - the Airlearn course list and screenshots (originals only, for reference).
