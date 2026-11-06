@@ -83,7 +83,8 @@ Useful URLs:
   - **decided: device text-to-speech plus listening questions; short typed answers on phones, forgiving case,
     accents and ¡¿ (with a hint); speaking questions later;**
   - **decided: keep ¿Cómo estás? / Mucho gusto in Greetings, tagged as common phrases above A1** (PCIC lists them at A2);
-  - still open in §7: who reviews the Spanish;
+  - **decided: the user will find a Spanish reviewer** (Mexican usage). Units 1–2 and the zh-TW explanations must
+    be reviewed before R6B sign-off. All 7 key decisions are answered;
   - the Airlearn course list and screenshots (originals only, for reference).
   The teaching flow (§6) is final only after both arrive.
 - R6B: Greetings becomes Spanish units 1–2. It needs new question types (listen-choose, order-words, fill-blank,
