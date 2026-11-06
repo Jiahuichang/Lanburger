@@ -80,8 +80,7 @@ Useful URLs:
     every plural; vos only as a note;**
   - **decided: A1 is split.** Hello Town is A1.1 (units 0–8 on its 5 lanterns); a second village is A1.2 (units
     9–12) (§5.1);
-  - the rest of §7 ( how A1 maps to the villages, audio and typed answers,
-    who reviews the Spanish);
+  - the rest of §7 (audio and typed answers, phrases above A1, who reviews the Spanish);
   - the Airlearn course list and screenshots (originals only, for reference).
   The teaching flow (§6) is final only after both arrive.
 - R6B: Greetings becomes Spanish units 1–2. It needs new question types (listen-choose, order-words, fill-blank,
