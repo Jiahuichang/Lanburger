@@ -17,6 +17,7 @@ Communicate with the user in **Traditional Chinese (Taiwan)**. All in-game UI te
 | Any visual: colors, sprites, tiles, UI, lighting   | `docs/ART_DIRECTION.md` + `src/art/tokens.ts`                  |
 | Maps, buildings, unlock order                      | `docs/WORLD_MAP.md`                                            |
 | Lessons, questions, review, languages              | `docs/LEARNING_SYSTEM.md`                                      |
+| Spanish syllabus, CEFR/PCIC scope, open decisions  | `docs/SPANISH_CURRICULUM.md`                                   |
 | Quests, XP, energy, mastery, burger growth, save   | `docs/PROGRESSION_SYSTEM.md`                                   |
 | Cooking / Snake / Kart or the mini-game framework  | `docs/MINIGAMES.md`                                            |
 | NPC looks, friend NPCs, character cards           | `docs/CHARACTERS.md`                                           |

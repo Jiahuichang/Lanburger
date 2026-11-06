@@ -8,8 +8,12 @@ _Last updated: 2026-11-06_
   `docs/IMPLEMENTATION_PLAN.md` (all decisions approved).
 - **Phase:** R1–R5 are done. **The Hello Town vertical slice is complete**: the main quest "Welcome to Hello Town!"
   takes a new player from the Mayor through Maggie's Greetings lessons and a chat with Remy to lighting the first
-  Word Lantern. That earns XP and levels, Lettuce, and opens the Burger Bistro. Next: **R6**, the other 4 Hello Town
-  topics, building interiors, side quests and friend NPCs.
+  Word Lantern. That earns XP and levels, Lettuce, and opens the Burger Bistro.
+- **Re-prioritized (2026-11-06):** before adding more village content, build a complete Spanish curriculum.
+  **R6A (in progress)** is planning only: an audit of the Spanish Greetings and a zero-to-A1 syllabus draft based on
+  CEFR and PCIC, in `docs/SPANISH_CURRICULUM.md`. It waits on the user's decisions (§7) and their Airlearn reference
+  screens. **R6B** then rebuilds Greetings as the first complete Spanish unit. Other topics, interiors and side
+  quests come after that.
 - **Build:** ✅ `npm run build` passes. Every push to `main` deploys to GitHub Pages.
 - **New in R2:**
   - Tile transitions (grass edges, rounded corners, river banks, forest edges, bridge rails), animated water,
@@ -43,7 +47,7 @@ Needs Node 20.19+ or 22.12+ (required by Vite 8).
 
 Then in Claude Code:
 
-> Read CLAUDE.md, PROJECT_STATUS.md and docs/IMPLEMENTATION_PLAN.md. Continue with R6.
+> Read CLAUDE.md, PROJECT_STATUS.md, docs/IMPLEMENTATION_PLAN.md and docs/SPANISH_CURRICULUM.md. Continue R6A.
 
 Useful URLs:
 - `/?touch=1`: force the touch controls.
@@ -62,15 +66,20 @@ Useful URLs:
 2. Optional, and only with the user's OK because it needs permission to launch Chrome: run `npm run playtest`.
    The script was rewritten for top-down play (about 18 checks) but **has not been run yet**.
 
-## R6: what comes next (see IMPLEMENTATION_PLAN §5, WORLD_MAP)
+## R6A / R6B: what comes next (see docs/SPANISH_CURRICULUM.md)
 
-- The other 4 Hello Town topics (Food & Ordering, Shopping, Directions, Everyday Talk), each with content packs in 5
-  languages.
-- Interiors for the Burger Bistro, General Store and Racing Garage, each with its teacher and a building quest that
-  lights its lantern and earns its topping (Cheese, Tomato, Pickle, Onion).
-- Side quests from the townsfolk (the tracker's Side tab is ready); more for the friend NPCs.
-- Before any of that: a native-speaker review of the Greetings packs (`src/content/learning/greetings/*.ts`,
-  `reviewed: false`).
+- R6A (docs only): the audit and syllabus draft are written. Waiting on the user for:
+  - the decisions in §7 (main Spanish variety, Lanburger's grammatical gender, tú/usted, how A1 maps to the
+    villages, audio and typed answers, who reviews the Spanish);
+  - the Airlearn course list and screenshots (originals only, for reference).
+  The teaching flow (§6) is final only after both arrive.
+- R6B: Greetings becomes Spanish units 1–2. It needs new question types (listen-choose, order-words, fill-blank,
+  short typed answers), several correct answers per question, error-specific feedback, NPC use (Remy, plus Mayor
+  Bun using usted), and review that gets harder over time. Story completion and mastery are recorded and shown
+  separately.
+- Other languages keep their current content; no big content additions for them in this round.
+- A native Spanish teacher review is needed before R6B sign-off (`reviewed: false` today).
+- The R5 phone checklist is in `docs/screenshots/r5/README.md`.
 
 ## R5: what was added
 

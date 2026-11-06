@@ -45,3 +45,26 @@
 
 - Burger Bistro 還沒有室內，Food & Ordering 課程是 R6 的內容；門口文字會說明這點。
 - 隱藏的瀏覽器分頁會讓計時器變慢，所以測試時橫幅會排隊比較久。實際遊玩時每個橫幅約 2.3 秒。
+
+## 手機驗收清單（真機，橫向）
+
+開 https://jiahuichang.github.io/Lanburger/?reset=1 從新遊戲開始。之後重新整理時不要再加 `?reset=1`。
+
+1. 開場：
+   - 上方中央會出現 "New Quest" 橫幅。
+   - 左上的任務面板不會擋到頭像或搖桿。
+   - 右上的小地圖看得到黃色閃爍標記。
+2. 跟 Mayor Bun（頭上有 `!`）說話後，第 1 步會打勾，畫面出現 `+10 XP`，XP 條也會增加。
+3. 走到 Bistro、Store、Academy 門口，每到一處都出現 "New place" 提示，計數 1/3 → 3/3。
+4. 進 Academy 上 3 堂課：
+   - 答對會顯示 `+3 XP`，答錯先改後對會顯示 `+1 XP`。
+   - 升級時會出現 Level Up 橫幅，體力補滿。
+5. 回廣場找 Remy（頭上有 `!`）聊天，4 題情境回應題的按鈕用拇指點得到、字看得清楚。
+6. 鎮長頭上變成 `?`。回報後依序出現這些橫幅：Quest Complete、Word Lantern lit、New topping、Now open、New Quest。
+7. 廣場的 Greetings 燈籠亮起，Lanburger 頭上有生菜，小地圖顯示 Lanterns 1/5。
+8. 點 Burger Bistro 門口，會顯示新的文字，第二個任務完成。
+9. Quests、Bag、Collection 面板：
+   - 可以捲動，關閉鈕好按。
+   - 在 Bag 裡開關生菜，角色外觀會跟著變。
+10. Listen 按鈕在手機上有西文發音，記下是哪支手機、聲音是否自然。
+11. 關掉分頁再打開，任務、等級、燈籠、生菜都還在。
