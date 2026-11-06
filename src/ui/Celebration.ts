@@ -29,7 +29,11 @@ export class Celebration {
   private queue: CelebrationSpec[] = [];
   private running = false;
 
-  constructor(parent: HTMLElement) {
+  constructor(
+    parent: HTMLElement,
+    /** Called as each banner appears (sound). */
+    private onShow?: (spec: CelebrationSpec) => void,
+  ) {
     this.el = document.createElement('div');
     this.el.className = 'celebration';
     this.el.setAttribute('role', 'status');
@@ -57,6 +61,7 @@ export class Celebration {
       this.el.querySelector('.celebration-body')!.textContent = c.body;
       void this.el.offsetWidth;
       this.el.classList.add('is-shown');
+      this.onShow?.(c);
       await wait(SHOW_MS);
       this.el.classList.remove('is-shown');
       await wait(GAP_MS);

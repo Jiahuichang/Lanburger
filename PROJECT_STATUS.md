@@ -95,6 +95,21 @@ Useful URLs:
 - A native Spanish teacher review is needed before R6B sign-off (`reviewed: false` today).
 - The R5 phone checklist is in `docs/screenshots/r5/README.md`.
 
+## Answer feedback (2026-11-06, user request)
+
+- `src/audio/Sfx.ts`: original sound effects synthesized with Web Audio (no audio files): correct, a 3+ streak,
+  a gentle wrong, a lesson-complete fanfare, and a chime for reward banners. Settings → Sound effects On/Off
+  (`settings.sfxVolume`, no save change). It's a service: `services.sfx`.
+- The lesson card:
+  - Correct: the chosen answer pops with a green glow and pixel sparks, and the +XP pill bounces in.
+  - Streak: from 3 first-try correct answers in a row, a "★ N in a row!" badge.
+  - Wrong: the chosen answer shakes gently.
+  - Finish: the "Lesson complete!" title pops with a spark burst, and the learned phrases slide in one by one.
+- `settings.reducedMotion` (body class `reduce-motion`) and the OS reduced-motion setting turn the animations off.
+- Checked by script in the built-in browser: sounds fire, the audio context runs, the animations run (the pane was
+  hidden, so they were checked from computed styles). 🧪 Not yet heard or seen on a real phone. On iOS, check that
+  sound plays after the first tap, and with the silent switch on.
+
 ## R5: what was added
 
 - Quests: `src/quest/QuestSystem.ts` (pure). State steps (explore / visit / learn / practice) are read from save flags,

@@ -35,6 +35,10 @@ export class LessonPanel {
   /** XP earned by the last answer and during this session (shown on the cards). */
   private lastXp = 0;
   private earned = 0;
+  /** Correct answers in a row on the first try (shown from 3 up). */
+  private streak = 0;
+  /** The choice just answered, animated once on the next render. */
+  private justPicked: string | null = null;
 
   constructor(parent: HTMLElement, private s: Services) {
     this.el = document.createElement('div');
@@ -71,6 +75,8 @@ export class LessonPanel {
     this.opts = opts;
     this.feedback = null;
     this.earned = 0;
+    this.streak = 0;
+    this.justPicked = null;
     this.openedAt = performance.now();
     this.s.input.enabled = false;
     document.body.classList.add('is-talking');
@@ -156,6 +162,10 @@ export class LessonPanel {
           const solvedThis = this.feedback?.correct && c.id === q.item;
           if (ses.disabled.includes(c.id)) b.classList.add('is-wrong');
           if (solvedThis) b.classList.add('is-right');
+          if (c.id === this.justPicked) {
+            b.classList.add('is-just');
+            if (solvedThis) b.append(sparkBurst(10));
+          }
           b.disabled = ses.disabled.includes(c.id) || !!this.feedback?.correct;
           b.addEventListener('click', () => this.pick(c.id));
           grid.append(b);
@@ -165,6 +175,7 @@ export class LessonPanel {
           const fb = div(`lesson-feedback ${this.feedback.correct ? 'is-right' : 'is-wrong'}`);
           const title = div('lesson-feedback-title', this.feedback.correct ? t('lesson.correct') : t('lesson.notQuite'));
           if (this.feedback.xp) title.append(div('lesson-xp', t('xp.gain', { n: this.feedback.xp })));
+          if (this.feedback.correct && this.streak >= 3) title.append(div('lesson-streak', `★ ${t('lesson.streak', { n: this.streak })}`));
           fb.append(title);
           if (this.feedback.text) fb.append(support(this.feedback.text, this.opts.support, 'lesson-feedback-text'));
           box.append(fb);
@@ -173,12 +184,15 @@ export class LessonPanel {
         break;
       }
       case 'complete': {
-        box.append(div('lesson-kicker', this.opts.doneLabel ?? (st.text ? t('lesson.complete') : t('lesson.reviewDone'))));
+        const kicker = div('lesson-kicker lesson-kicker--done', this.opts.doneLabel ?? (st.text ? t('lesson.complete') : t('lesson.reviewDone')));
+        kicker.append(sparkBurst(14, 'big'));
+        box.append(kicker);
         if (this.earned > 0) box.append(div('lesson-xp-total', t('xp.gain', { n: this.earned })));
         if (st.text) box.append(support(st.text, this.opts.support, 'lesson-text'));
         const list = div('lesson-summary');
-        for (const it of st.items) {
+        for (const [i, it] of st.items.entries()) {
           const row = div('lesson-summary-row');
+          row.style.setProperty('--i', String(i));
           row.append(targetText(it.form.text, this.opts.target), support(it.meaning, this.opts.support, 'lesson-summary-meaning'));
           list.append(row);
         }
@@ -223,6 +237,7 @@ export class LessonPanel {
     if (!ses.canAdvance) return;
     ses.next();
     this.feedback = null;
+    if (ses.step.kind === 'complete') this.s.sfx.play('complete');
     this.render();
   }
 
@@ -230,9 +245,14 @@ export class LessonPanel {
     const ses = this.session;
     if (!ses || ses.step.kind !== 'question' || this.feedback?.correct) return;
     this.lastXp = 0;
+    const firstTry = ses.disabled.length === 0;
     const r = ses.answer(id);
     this.feedback = { correct: r.correct, text: r.explanation, xp: this.lastXp };
+    this.streak = r.correct && firstTry ? this.streak + 1 : 0;
+    this.justPicked = id;
+    this.s.sfx.play(!r.correct ? 'wrong' : this.streak >= 3 ? 'streak' : 'correct');
     this.render();
+    this.justPicked = null;
   }
 
   private speak(text: string): void {
@@ -258,6 +278,18 @@ export class LessonPanel {
       this.advance();
     }
   }
+}
+
+/** Little pixel sparks flying out from the middle of an element (CSS animates them, then they fade). */
+function sparkBurst(n: number, size: 'small' | 'big' = 'small'): HTMLElement {
+  const b = div(`spark-burst spark-burst--${size}`);
+  b.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('i');
+    s.style.setProperty('--a', `${Math.round((360 / n) * i + (i % 2) * 9)}deg`);
+    b.append(s);
+  }
+  return b;
 }
 
 function div(cls: string, text?: string): HTMLElement {

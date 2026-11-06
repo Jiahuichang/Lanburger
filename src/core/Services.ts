@@ -6,6 +6,7 @@ import type { UiRoot } from '../ui/UiRoot';
 import type { PixelRenderer } from '../render/PixelRenderer';
 import type { SupportLanguage, TargetLanguage } from '../learning/types';
 import type { ProgressDirector } from '../progress/ProgressDirector';
+import type { Sfx } from '../audio/Sfx';
 import type { QuestChange } from '../quest/QuestSystem';
 
 export interface GameEvents {
@@ -42,4 +43,5 @@ export interface Services {
   ui: UiRoot;
   flags: DebugFlags;
   progress: ProgressDirector;
+  sfx: Sfx;
 }

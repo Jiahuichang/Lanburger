@@ -11,6 +11,7 @@ export class SettingsPanel {
   private el: HTMLElement;
   private target: HTMLSelectElement;
   private support: HTMLSelectElement;
+  private sfx: HTMLSelectElement;
   private _open = false;
 
   constructor(parent: HTMLElement, private s: Services) {
@@ -30,12 +31,23 @@ export class SettingsPanel {
           <span class="field-label" data-k="settings.supportLanguage"></span>
           <span class="select-wrap"><select class="sel-support"></select></span>
         </label>
+        <label class="field">
+          <span class="field-label" data-k="settings.sfx"></span>
+          <span class="select-wrap"><select class="sel-sfx"><option value="on"></option><option value="off"></option></select></span>
+        </label>
         <p class="field-note"></p>
         <button class="btn btn--primary modal-done" type="button"></button>
       </div>`;
     parent.append(this.el);
     this.target = this.el.querySelector('.sel-target')!;
     this.support = this.el.querySelector('.sel-support')!;
+    this.sfx = this.el.querySelector('.sel-sfx')!;
+    this.sfx.addEventListener('change', () => {
+      const on = this.sfx.value === 'on';
+      this.s.save.update((d) => void (d.settings.sfxVolume = on ? 0.8 : 0));
+      this.s.save.flush();
+      if (on) this.s.sfx.play('correct');
+    });
     fill(this.target, TARGET_LANGUAGES);
     fill(this.support, SUPPORT_LANGUAGES);
     this.target.addEventListener('change', () => this.apply());
@@ -74,6 +86,8 @@ export class SettingsPanel {
     this.el.querySelector('.modal-title')!.textContent = t('settings.title');
     this.el.querySelectorAll<HTMLElement>('[data-k]').forEach((n) => (n.textContent = t(n.dataset.k as never)));
     this.el.querySelector('.field-note')!.textContent = t('settings.note');
+    this.sfx.options[0].textContent = t('settings.on');
+    this.sfx.options[1].textContent = t('settings.off');
     this.el.querySelector('.modal-done')!.textContent = t('settings.close');
     this.el.querySelector('.modal-x')!.setAttribute('aria-label', t('settings.close'));
   }
@@ -82,6 +96,7 @@ export class SettingsPanel {
     const p = this.s.save.data.profile;
     this.target.value = p.targetLanguage;
     this.support.value = p.supportLanguage;
+    this.sfx.value = this.s.save.data.settings.sfxVolume > 0 ? 'on' : 'off';
   }
 
   private apply(): void {

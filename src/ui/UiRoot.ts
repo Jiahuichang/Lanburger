@@ -50,7 +50,9 @@ export class UiRoot {
     this.modalLayer = layer('ui-modal');
     this.prompt = new Prompt(this.worldLayer);
     // rewards show above every panel (but under the rotate overlay and the scene fade)
-    this.celebration = new Celebration(layer('ui-celebrate'));
+    this.celebration = new Celebration(layer('ui-celebrate'), (c) => {
+      if (c.kind !== 'item' && c.kind !== 'building') this.services?.sfx.play('celebrate');
+    });
 
     this.rotate = document.createElement('div');
     this.rotate.className = 'rotate-overlay';
@@ -78,6 +80,9 @@ export class UiRoot {
   /** Called once services exist (HUD/settings need save, input, events). */
   bind(services: Services): void {
     this.services = services;
+    const motion = () => document.body.classList.toggle('reduce-motion', !!services.save.data.settings.reducedMotion);
+    motion();
+    services.save.onChange(motion);
     this.tracker = new QuestTracker(this.hudLayer, services);
     this.minimap = new Minimap(this.hudLayer);
     this.hud = new Hud(this.hudLayer, services);
