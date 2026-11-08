@@ -1,9 +1,10 @@
 import type { Facing } from '../character/types';
 import type { MasteryRecord, SupportLanguage, TargetLanguage } from '../learning/types';
 import type { QuestProgress } from '../npc/types';
+import type { GrammaticalGender } from '../learning/content';
 
 /** Bump when the shape changes and add a migration in SaveSystem.migrate(). */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 export const SAVE_KEY = 'linguaquest.save';
 
 export const START_MAP = 'hello-town';
@@ -17,6 +18,11 @@ export interface SaveData {
     targetLanguage: TargetLanguage;
     /** Language of lesson explanations (menus stay English). */
     supportLanguage: SupportLanguage;
+    /**
+     * Which Spanish forms the player uses for themself: -o (encantado) or -a (encantada). Null until the
+     * first lesson that needs it asks (SPANISH_CURRICULUM §7.2). Any language with gendered forms can reuse it.
+     */
+    grammaticalGender: GrammaticalGender | null;
     createdAt: number;
   };
   location: {
@@ -52,6 +58,8 @@ export interface SaveData {
     musicVolume: number;
     sfxVolume: number;
     reducedMotion: boolean;
+    /** Listening questions (device text-to-speech). Off for playing in quiet places. */
+    listening: boolean;
   };
 }
 
@@ -74,7 +82,7 @@ export function defaultSave(now = Date.now()): SaveData {
   const lang = guessLanguages();
   return {
     version: SAVE_VERSION,
-    profile: { name: 'Lanburger', targetLanguage: lang.target, supportLanguage: lang.support, createdAt: now },
+    profile: { name: 'Lanburger', targetLanguage: lang.target, supportLanguage: lang.support, grammaticalGender: null, createdAt: now },
     location: { mapId: START_MAP, x: NaN, y: NaN, facing: 'down' },
     stats: { level: 1, xp: 0, energy: ENERGY_MAX, energyUpdatedAt: now, coins: 0 },
     burger: { stage: 'slider', toppings: [], equipped: [] },
@@ -87,6 +95,6 @@ export function defaultSave(now = Date.now()): SaveData {
     unlockedBuildings: ['town-hall', 'language-academy'],
     seenDialogues: [],
     flags: {},
-    settings: { musicVolume: 0.7, sfxVolume: 0.8, reducedMotion: false },
+    settings: { musicVolume: 0.7, sfxVolume: 0.8, reducedMotion: false, listening: true },
   };
 }

@@ -14,13 +14,16 @@ export class SettingsPanel {
   private support: HTMLSelectElement;
   private sfx: HTMLSelectElement;
   private music: HTMLSelectElement;
+  private forms: HTMLSelectElement;
+  private formsField: HTMLElement;
+  private listening: HTMLSelectElement;
   private _open = false;
 
   constructor(parent: HTMLElement, private s: Services) {
     this.el = document.createElement('div');
     this.el.className = 'modal';
     this.el.innerHTML = `
-      <div class="modal-card panel" role="dialog" aria-modal="true">
+      <div class="modal-card settings-card panel" role="dialog" aria-modal="true">
         <div class="modal-head">
           <h2 class="modal-title"></h2>
           <button class="icon-btn icon-btn--small modal-x" type="button">${icons.close}</button>
@@ -32,6 +35,14 @@ export class SettingsPanel {
         <label class="field">
           <span class="field-label" data-k="settings.supportLanguage"></span>
           <span class="select-wrap"><select class="sel-support"></select></span>
+        </label>
+        <label class="field field-forms">
+          <span class="field-label" data-k="settings.forms"></span>
+          <span class="select-wrap"><select class="sel-forms"><option value="" disabled></option><option value="m"></option><option value="f"></option></select></span>
+        </label>
+        <label class="field">
+          <span class="field-label" data-k="settings.listening"></span>
+          <span class="select-wrap"><select class="sel-listening"><option value="on"></option><option value="off"></option></select></span>
         </label>
         <label class="field">
           <span class="field-label" data-k="settings.music"></span>
@@ -49,6 +60,18 @@ export class SettingsPanel {
     this.support = this.el.querySelector('.sel-support')!;
     this.sfx = this.el.querySelector('.sel-sfx')!;
     this.music = this.el.querySelector('.sel-music')!;
+    this.forms = this.el.querySelector('.sel-forms')!;
+    this.formsField = this.el.querySelector('.field-forms')!;
+    this.listening = this.el.querySelector('.sel-listening')!;
+    this.forms.addEventListener('change', () => {
+      const g = this.forms.value === 'f' ? 'f' : 'm';
+      this.s.save.update((d) => void (d.profile.grammaticalGender = g));
+      this.s.save.flush();
+    });
+    this.listening.addEventListener('change', () => {
+      this.s.save.update((d) => void (d.settings.listening = this.listening.value === 'on'));
+      this.s.save.flush();
+    });
     this.music.addEventListener('change', () => {
       this.s.save.update((d) => void (d.settings.musicVolume = this.music.value === 'on' ? 0.7 : 0));
       this.s.save.flush();
@@ -99,7 +122,10 @@ export class SettingsPanel {
     this.el.querySelector('.modal-title')!.textContent = t('settings.title');
     this.el.querySelectorAll<HTMLElement>('[data-k]').forEach((n) => (n.textContent = t(n.dataset.k as never)));
     this.el.querySelector('.field-note')!.textContent = t('settings.note');
-    for (const sel of [this.sfx, this.music]) {
+    this.forms.options[0].textContent = t('settings.formsUnset');
+    this.forms.options[1].textContent = t('settings.formsM');
+    this.forms.options[2].textContent = t('settings.formsF');
+    for (const sel of [this.sfx, this.music, this.listening]) {
       sel.options[0].textContent = t('settings.on');
       sel.options[1].textContent = t('settings.off');
     }
@@ -113,6 +139,9 @@ export class SettingsPanel {
     this.support.value = p.supportLanguage;
     this.sfx.value = this.s.save.data.settings.sfxVolume > 0 ? 'on' : 'off';
     this.music.value = this.s.save.data.settings.musicVolume > 0 ? 'on' : 'off';
+    this.listening.value = this.s.save.data.settings.listening ? 'on' : 'off';
+    this.forms.value = p.grammaticalGender ?? '';
+    this.formsField.hidden = p.targetLanguage !== 'es';
   }
 
   private apply(): void {
@@ -123,6 +152,7 @@ export class SettingsPanel {
       d.profile.supportLanguage = support;
       delete d.flags.needsLanguagePick;
     });
+    this.formsField.hidden = target !== 'es';
     this.s.events.emit('language:changed', { target, support });
   }
 }

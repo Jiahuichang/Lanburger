@@ -25,7 +25,7 @@ export const QUESTS: QuestDefinition[] = [
         type: 'learn',
         targets: ['greetings-1', 'greetings-2', 'greetings-3'],
         npc: 'maggie',
-        description: "Finish Maggie's Greetings lessons",
+        description: "Finish Maggie's first Greetings lessons",
       },
       { id: 'chat', type: 'practice', targets: ['greetings'], npc: 'remy', description: 'Greet Remy by the fountain' },
       { id: 'report', type: 'talk', targets: ['mayor-bun'], npc: 'mayor-bun', turnIn: true, description: 'Report back to Mayor Bun' },
@@ -36,6 +36,27 @@ export const QUESTS: QuestDefinition[] = [
       items: { 'hello-badge': 1 },
       unlocks: ['lantern:greetings', 'topping:lettuce', 'building:burger-bistro'],
     },
+  },
+  {
+    // Spanish only: unit 2 of the Spanish syllabus (SPANISH_CURRICULUM §4, §8). Other languages have no
+    // lessons 4–6 in Greetings yet, so the quest never starts for them.
+    id: 'proper-introductions',
+    kind: 'side',
+    title: 'Proper Introductions',
+    summary: 'Learn to introduce yourself, then try the polite usted on Mayor Bun.',
+    giverNpcId: 'maggie',
+    requires: { quests: ['welcome-to-hello-town'], languages: ['es'] },
+    steps: [
+      {
+        id: 'lessons',
+        type: 'learn',
+        targets: ['greetings-4', 'greetings-5', 'greetings-6'],
+        npc: 'maggie',
+        description: "Finish Maggie's Introductions lessons",
+      },
+      { id: 'chat', type: 'practice', targets: ['greetings/usted'], npc: 'mayor-bun', description: 'Greet Mayor Bun politely (usted)' },
+    ],
+    rewards: { xp: 40, coins: 10 },
   },
   {
     id: 'a-taste-of-hello-town',

@@ -155,9 +155,7 @@ const graphs: DialogueGraph[] = [
         expression: 'happy',
         text: 'Welcome back! What shall we do today?',
         choices: [
-          { text: 'Lesson 1: Hello & Goodbye', action: 'lesson:greetings/greetings-1', doneIf: 'lesson:greetings-1' },
-          { text: 'Lesson 2: Introductions', action: 'lesson:greetings/greetings-2', requires: 'lesson:greetings-1', doneIf: 'lesson:greetings-2' },
-          { text: 'Lesson 3: How are you?', action: 'lesson:greetings/greetings-3', requires: 'lesson:greetings-2', doneIf: 'lesson:greetings-3' },
+          { text: 'Greetings lessons', expand: 'lessons:greetings' },
           { text: 'Free practice (restores energy)', action: 'practice', requires: 'lesson:greetings-1' },
           { text: 'Just saying hi!', next: 'b' },
         ],
@@ -174,6 +172,44 @@ const graphs: DialogueGraph[] = [
     start: 'a',
     lines: {
       a: { speaker: 'maggie', expression: 'celebrating', text: 'Great job, Lanburger! Come back for the next lesson whenever you are ready.' },
+    },
+  },
+  {
+    id: 'maggie.unit-es-1-done',
+    start: 'a',
+    lines: {
+      a: {
+        speaker: 'maggie',
+        expression: 'celebrating',
+        text: "That's Unit 1, Saludos, all done! Now say hello to someone for real. Remy by the fountain loves a chat.",
+      },
+    },
+  },
+  {
+    id: 'maggie.unit-es-2-done',
+    start: 'a',
+    lines: {
+      a: {
+        speaker: 'maggie',
+        expression: 'celebrating',
+        text: 'Unit 2, Presentarse, complete! Mayor Bun loves good manners. Go and greet her politely, with usted!',
+      },
+    },
+  },
+  {
+    id: 'mayor-bun.usted',
+    start: 'a',
+    lines: {
+      a: {
+        speaker: 'mayor-bun',
+        expression: 'happy',
+        text: 'Ah, Lanburger! Maggie tells me you have learned the polite way to speak. Shall we try? I will be as formal as at a town meeting.',
+        choices: [
+          { text: "Let's practice!", action: 'chat:greetings/usted' },
+          { text: 'Maybe later.', next: 'b' },
+        ],
+      },
+      b: { speaker: 'mayor-bun', expression: 'happy', text: 'Whenever you are ready. My door is always open.' },
     },
   },
   {

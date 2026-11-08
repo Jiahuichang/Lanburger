@@ -16,6 +16,11 @@ export interface DialogueChoice {
   requires?: string;
   /** Shown with a check mark once this flag is set. */
   doneIf?: string;
+  /**
+   * Replaced by generated choices before the conversation starts: "lessons:<topic>" becomes the next
+   * lesson of that topic (in the player's language) and a "Replay a lesson" menu.
+   */
+  expand?: string;
 }
 
 export interface DialogueLine {

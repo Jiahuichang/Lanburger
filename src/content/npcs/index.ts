@@ -17,6 +17,7 @@ export const NPCS: NpcDefinition[] = [
     dialogueId: 'mayor-bun.welcome',
     greeting: "Welcome to Hello Town, Lanburger! Our Word Lanterns have gone dark... Look around, and come back to me soon.",
     dialogues: [
+      { step: 'proper-introductions/chat', id: 'mayor-bun.usted' },
       { questDone: 'welcome-to-hello-town', id: 'mayor-bun.thanks' },
       { step: 'welcome-to-hello-town/report', id: 'mayor-bun.report' },
       { step: 'welcome-to-hello-town/explore', id: 'mayor-bun.explore' },

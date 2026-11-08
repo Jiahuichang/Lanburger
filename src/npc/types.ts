@@ -1,3 +1,4 @@
+import type { TargetLanguage } from '../learning/types';
 /**
  * NPC & Quest System contracts (GAME_DESIGN §8, PROGRESSION_SYSTEM §2).
  */
@@ -79,8 +80,11 @@ export interface QuestDefinition {
   giverNpcId: string;
   steps: QuestStep[];
   rewards: QuestRewards;
-  /** Starts by itself once these quests are complete (and the level is reached). */
-  requires?: { quests?: string[]; level?: number };
+  /**
+   * Starts by itself once these quests are complete (and the level is reached). `languages`: only for
+   * players learning one of these languages (content that exists in that language only, e.g. Spanish unit 2).
+   */
+  requires?: { quests?: string[]; level?: number; languages?: TargetLanguage[] };
 }
 
 export type QuestStatus = 'locked' | 'available' | 'active' | 'complete';

@@ -11,6 +11,9 @@ import { DIALOGUES } from '../content/dialogues/hello-town';
 import type { NpcDefinition } from '../npc/types';
 import { NpcBrain, PetBrain, withBodies, type Body } from '../npc/NpcBrain';
 import { DialogueRunner } from '../dialogue/DialogueRunner';
+import { expandLessonMenus } from '../dialogue/lessonMenu';
+import { topicFor } from '../content/learning';
+import { unitOf } from '../learning/content';
 import { LearningDirector, type Teacher } from '../learning/LearningDirector';
 import type { DialogueGraph } from '../dialogue/types';
 import type { SpeakerInfo } from '../ui/DialogueBox';
@@ -290,8 +293,10 @@ export class WorldScene implements Scene {
   }
 
   private async talk(it: Interactable): Promise<void> {
-    const graph = this.dialogueFor(it);
-    if (!graph || this.busy) return;
+    const found = this.dialogueFor(it);
+    if (!found || this.busy) return;
+    const lang = this.s.save.data.profile.targetLanguage;
+    const graph = expandLessonMenus(found, (id) => topicFor(id, lang), (flag) => !!this.s.save.data.flags[flag]);
     this.busy = true;
     this.talkingTo = it.id;
     this.player.emote = 'talk';
@@ -338,18 +343,18 @@ export class WorldScene implements Scene {
     );
   }
 
-  /** Actions requested by a conversation: "lesson:<topic>/<lesson>", "chat:<topic>" or "practice". */
+  /** Actions requested by a conversation: "lesson:<topic>/<lesson>", "chat:<topic>[/<chat>]" or "practice". */
   private async runAction(action: string, it: Interactable): Promise<void> {
     const teacher = await this.teacherFor(it);
     if (action === 'practice') {
       await this.study('practice', teacher);
       return;
     }
-    const chat = /^chat:([\w-]+)$/.exec(action);
+    const chat = /^chat:([\w-]+)(?:\/([\w-]+))?$/.exec(action);
     if (chat) {
       this.busy = true;
       this.player.emote = 'learn';
-      const done = await this.learning.runChat(chat[1], teacher);
+      const done = await this.learning.runChat(chat[1], teacher, chat[2]);
       this.player.emote = null;
       this.busy = false;
       if (done) this.player.playEmote('celebrate', EMOTE_SECONDS.celebrate);
@@ -359,6 +364,9 @@ export class WorldScene implements Scene {
     if (!m) return;
     this.busy = true;
     this.player.emote = 'learn';
+    const topic = topicFor(m[1], this.s.save.data.profile.targetLanguage);
+    const unit = topic && unitOf(topic, m[2]);
+    const unitWasDone = !!unit && unit.lessons.every((l) => !!this.s.save.data.flags[`lesson:${l}`]);
     const done = await this.learning.runLesson(m[1], m[2], teacher);
     this.player.emote = null;
     this.busy = false;
@@ -366,8 +374,10 @@ export class WorldScene implements Scene {
     this.player.playEmote('celebrate', EMOTE_SECONDS.celebrate);
     // the teacher's closing line
     const finishedTopic = !!this.s.save.data.flags[`topic:${m[1]}`];
+    const finishedUnit = !!unit && !unitWasDone && unit.lessons.every((l) => !!this.s.save.data.flags[`lesson:${l}`]);
     const npcId = it.id.replace(/^npc:/, '');
-    const closing: DialogueGraph = DIALOGUES[`${npcId}.${finishedTopic ? 'topic-done' : 'lesson-done'}`] ?? {
+    const closing: DialogueGraph = (finishedUnit ? DIALOGUES[`${npcId}.unit-${unit.id}-done`] : undefined) ??
+      DIALOGUES[`${npcId}.${finishedTopic ? 'topic-done' : 'lesson-done'}`] ?? {
       id: `${npcId}.after-lesson`,
       start: 'a',
       lines: { a: { speaker: npcId, expression: 'celebrating', text: 'Great job, Lanburger!' } },

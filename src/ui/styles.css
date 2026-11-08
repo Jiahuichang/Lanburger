@@ -2192,3 +2192,304 @@ select {
     animation: none !important;
   }
 }
+
+/* ───────────── R6B: curriculum lessons (goal and rule, situations, listening, fill-blank, word order, typing) */
+
+.lesson-labelled {
+  display: grid;
+  gap: 2px;
+  padding: 6px 12px;
+  border-radius: var(--r-card);
+  background: var(--c-panel-deep);
+  border: 1px solid var(--edge-faint);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.lesson-labelled-label,
+.lesson-context-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--c-title);
+}
+
+.lesson-rule {
+  border-left: 3px solid var(--c-xp);
+}
+
+.level-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-soft);
+  border: 1px solid var(--edge-faint);
+  border-radius: var(--r-pill);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.lesson-note--example {
+  max-width: 520px;
+  text-align: left;
+}
+
+.lesson-context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  background: var(--panel-glass-soft);
+  border: 1px solid var(--edge-faint);
+  font-size: 15px;
+}
+
+.lesson-choices--two {
+  grid-template-columns: 1fr 1fr;
+  max-width: 480px;
+}
+
+.lesson-listen-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.lesson-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lesson-play svg {
+  width: 22px;
+  height: 22px;
+}
+
+.link-btn {
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-soft);
+  background: none;
+  border: 0;
+  padding: 4px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.lesson-listen-words {
+  font-size: 20px;
+}
+
+.lesson-gap {
+  display: inline-block;
+  min-width: 2.5em;
+  margin: 0 2px;
+  padding: 0 6px;
+  border-bottom: 3px solid var(--c-title);
+  color: var(--c-title);
+}
+
+.lesson-gap.is-filled {
+  border-bottom-color: var(--c-correct);
+  color: var(--c-text);
+}
+
+.lesson-order {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  justify-items: center;
+}
+
+.lesson-order-line,
+.lesson-order-bank {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.lesson-order-line {
+  min-height: 52px;
+  padding: 6px;
+  border-radius: var(--r-card);
+  background: var(--c-panel-deep);
+  border: 1px dashed var(--edge-soft);
+  align-items: center;
+}
+
+.lesson-order-empty {
+  color: var(--text-soft);
+}
+
+.lesson-word {
+  position: relative;
+  min-height: 44px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 19px;
+  color: var(--c-text);
+  background: var(--panel-glass-soft);
+  border: 2px solid var(--edge-faint);
+  border-radius: var(--r-card);
+  cursor: pointer;
+}
+
+.lesson-word:hover:not(:disabled) {
+  border-color: var(--c-title);
+}
+
+.lesson-word.is-used {
+  opacity: 0.25;
+}
+
+.lesson-word:disabled {
+  cursor: default;
+}
+
+.lesson-word-key {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  font-size: 10px;
+  color: var(--text-soft);
+}
+
+.lesson-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.lesson-type {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  justify-items: center;
+}
+
+.lesson-type-form {
+  display: flex;
+  gap: 8px;
+  width: min(520px, 100%);
+}
+
+.lesson-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 20px;
+  color: var(--c-text);
+  background: var(--c-panel-deep);
+  border: 2px solid var(--edge-soft);
+  border-radius: var(--r-card);
+}
+
+.lesson-input:focus {
+  outline: none;
+  border-color: var(--c-title);
+}
+
+.lesson-input:disabled {
+  border-color: var(--c-correct);
+}
+
+.lesson-keys {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.lesson-key {
+  min-width: 40px;
+  min-height: 40px;
+  font: inherit;
+  font-size: 18px;
+  color: var(--c-text);
+  background: var(--panel-glass-soft);
+  border: 1px solid var(--edge-faint);
+  border-radius: var(--r-button);
+  cursor: pointer;
+}
+
+.lesson-tip {
+  color: var(--text-soft);
+}
+
+.lesson-feedback.is-almost {
+  border-left-color: var(--c-xp);
+}
+
+.lesson-feedback.is-almost .lesson-feedback-title {
+  color: var(--c-xp);
+}
+
+.lantern-sub {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+
+@media (max-height: 460px) {
+  .lesson-labelled {
+    padding: 4px 10px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .lesson-context {
+    font-size: 13px;
+    padding: 2px 10px;
+  }
+  .lesson-word {
+    min-height: 40px;
+    font-size: 16px;
+    padding: 4px 10px;
+  }
+  .lesson-order-line {
+    min-height: 46px;
+  }
+  .lesson-input {
+    min-height: 40px;
+    font-size: 17px;
+  }
+  .lesson-key {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 16px;
+  }
+  .lesson-note--example {
+    font-size: 13px;
+    padding: 4px 10px;
+  }
+}
+
+.field[hidden] {
+  display: none;
+}
+
+/* Settings grew to six fields (R6B): two columns on short landscape phones so everything fits. */
+@media (max-height: 460px) {
+  .settings-card {
+    width: min(660px, calc(100vw - 32px));
+    grid-template-columns: 1fr 1fr;
+    column-gap: 16px;
+    row-gap: 8px;
+  }
+  .settings-card .modal-head,
+  .settings-card .field-note,
+  .settings-card .modal-done {
+    grid-column: 1 / -1;
+  }
+}

@@ -1,6 +1,6 @@
 # Project Status — Lanburger
 
-_Last updated: 2026-11-06_
+_Last updated: 2026-11-08_
 
 ## TL;DR
 
@@ -10,10 +10,13 @@ _Last updated: 2026-11-06_
   takes a new player from the Mayor through Maggie's Greetings lessons and a chat with Remy to lighting the first
   Word Lantern. That earns XP and levels, Lettuce, and opens the Burger Bistro.
 - **Re-prioritized (2026-11-06):** before adding more village content, build a complete Spanish curriculum.
-  **R6A (in progress)** is planning only: an audit of the Spanish Greetings and a zero-to-A1 syllabus draft based on
-  CEFR and PCIC, in `docs/SPANISH_CURRICULUM.md`. It waits on the user's decisions (§7) and their Airlearn reference
-  screens. **R6B** then rebuilds Greetings as the first complete Spanish unit. Other topics, interiors and side
-  quests come after that.
+  R6A (planning, `docs/SPANISH_CURRICULUM.md`) is done: all 7 decisions answered.
+- **R6B (2026-11-08): built, waiting for sign-off.** Spanish Greetings is now syllabus units 1 (Saludos) and 2
+  (Presentarse): 6 lessons, new question types, several right answers, error-specific feedback, the player's
+  Spanish forms (-o/-a), Remy (tú) and Mayor Bun (usted) practice chats, harder review over time, and story
+  completion shown apart from mastery. The user chose to start R6B **without** the Airlearn reference screens;
+  §6 of the curriculum is final for now and can be tuned when they arrive. Sign-off still needs: the Spanish
+  teacher's review, and a real-phone check. Details below and in `docs/screenshots/r6b/README.md`.
 - **Build:** ✅ `npm run build` passes. Every push to `main` deploys to GitHub Pages.
 - **New in R2:**
   - Tile transitions (grass edges, rounded corners, river banks, forest edges, bridge rails), animated water,
@@ -47,7 +50,7 @@ Needs Node 20.19+ or 22.12+ (required by Vite 8).
 
 Then in Claude Code:
 
-> Read CLAUDE.md, PROJECT_STATUS.md, docs/IMPLEMENTATION_PLAN.md and docs/SPANISH_CURRICULUM.md. Continue R6A.
+> Read CLAUDE.md, PROJECT_STATUS.md, docs/IMPLEMENTATION_PLAN.md and docs/SPANISH_CURRICULUM.md. R6B is built; help me sign it off (teacher review, real-phone check), then plan R6C.
 
 Useful URLs:
 - `/?touch=1`: force the touch controls.
@@ -66,7 +69,50 @@ Useful URLs:
 2. Optional, and only with the user's OK because it needs permission to launch Chrome: run `npm run playtest`.
    The script was rewritten for top-down play (about 18 checks) but **has not been run yet**.
 
-## R6A / R6B: what comes next (see docs/SPANISH_CURRICULUM.md)
+## R6B: what was built (2026-11-08)
+
+- **Content** (`src/content/learning/greetings/es-topic.ts`, `es.ts`): Spanish Greetings is a language-specific
+  version of the Greetings topic (same id, so lanterns, quests and flags are unchanged). Unit 1 Saludos =
+  lessons `greetings-1…3` (Hello & Goodbye; Morning to Night; How’s It Going?), unit 2 Presentarse =
+  `greetings-4…6` (What’s Your Name?; Nice to Meet You; Polite “You”). 22 phrases, every lesson has a goal,
+  a short rule, a sound tip (unit 0 spread over the lessons) and contrast notes. ¿Cómo estás?, Mucho gusto
+  and ¿Cómo está usted? carry `level: 'A2'` and show “Common phrase · beyond A1”. Mexican usage
+  (¡Buen día! accepted). The other 4 languages keep their 3 shared lessons.
+- **Engine** (`src/learning/LessonSession.ts`, `answers.ts`): stages of SPANISH_CURRICULUM §6.1 in order:
+  examples → meaning / target / listening (interleaved, never 3 of a kind in a row) → fill-blank and word
+  order → typed answer → replies. Replies accept several answers (and say “Also right: …”). Wrong answers
+  get specific feedback: wrong time of day, tú instead of usted (and back), goodbye instead of hello, or a
+  per-option note for fill-blanks. Typed answers forgive capitals, ¡¿, accents and ñ→n (with a tip); one
+  letter off is “Almost!” with no energy cost; `{name}` matches any name. Review questions get harder by
+  Leitner box (0–1 recognise, 2–3 listen/order, 4–5 type). Typing is only offered for packs with
+  `typing: true` (Spanish now).
+- **Spanish forms**: Maggie asks -o or -a in lesson 5, before encantado/encantada. Saved in
+  `profile.grammaticalGender`; Settings → “Spanish forms for Lanburger” changes it. The other gender’s form
+  counts as right with a gentle tip.
+- **Save v3** (`SAVE_VERSION = 3`, `migrateV2toV3`): adds `profile.grammaticalGender` (null) and
+  `settings.listening` (true). Lesson flags keep their meaning by position, so old Spanish players keep
+  their story progress and can replay lessons.
+- **Audio** (`src/audio/Voice.ts`): voices in the order es-MX → es-US → es-419 → any non-es-ES Spanish voice.
+  Settings → “Listening questions” On/Off. A listening question can always be switched to reading.
+- **NPCs and quests**: Maggie's lesson menu is generated from the topic for the player's language
+  (`src/dialogue/lessonMenu.ts`: “Next: Lesson n” + “Replay a lesson”). Remy's chat uses unit 1. New side
+  quest **Proper Introductions** (Spanish only, `requires.languages`): lessons 4–6, then a usted chat with
+  Mayor Bun (`chat:greetings/usted`). Maggie has unit-done lines.
+- **Completion vs mastery**: finishing a unit's lessons and its chat sets `unit:<id>` (celebration, +10 XP).
+  Stars now measure mastery only (★ every phrase right at least once, ★★ average box ≥ 60 %, ★★★ all box ≥ 4).
+  The Collection shows “Lessons n/6 · Unit 1 · Saludos ✓” apart from the stars.
+- Checked by script in headless Chromium (results in `docs/screenshots/r6b/README.md`). `npm run build` passes.
+
+### Before calling R6B done
+
+1. 👩‍🏫 A Spanish teacher (Mexican usage) reviews `es-topic.ts` and `es.ts`, plus the zh-TW explanations, then
+   set `reviewed: true`. Open points for them: is ¡Buen día! fine as an accepted answer; should the other
+   gender's form count as right; señora Bun (Mayor Bun is a woman in the story).
+2. 🧪 On a real landscape phone: typed answers with the on-screen keyboard (does it cover the input?), the
+   special-letter buttons, es-MX voice on iOS and Android, listening questions with the silent switch on.
+3. Optional: the Airlearn reference screens, to tune the lesson flow (§6).
+
+## R6A / R6B decisions (see docs/SPANISH_CURRICULUM.md)
 
 - R6A (docs only): the audit and syllabus draft are written. Waiting on the user for:
   - **decided 2026-11-06: Latin American Spanish is the main variety.** That means ustedes, seseo, and vos/vosotros
@@ -193,7 +239,11 @@ Useful URLs:
 - GitHub Pages deploy: on Linux, `npm ci` rejects the lockfile, because rolldown lists optional bindings for platforms
   (s390x, openharmony) that npm records without a version. The workflow falls back to `npm install` and reports the
   reason as a public annotation. Deploys work (first success 2026-11-05). Re-check after the next Vite/rolldown update.
-- The JS bundle is about 598 kB (156 kB gzipped), mostly Three.js.
+- The JS bundle is about 766 kB (211 kB gzipped), mostly Three.js.
+- A Spanish lesson now has 11–17 questions (lesson 6 is the longest, about 4 minutes). Shorten it if
+  playtesting shows it drags.
+- Lesson flags (`lesson:greetings-N`) are shared by every language, as before: switching languages keeps
+  story progress, so lessons can show ✓ that were done in another language.
 - The `typescript` dependency is 7.0.2 (the native compiler). Pin `typescript@5` if a tool chokes on it.
 - The save key is still `linguaquest.save`, kept on purpose so v1 saves migrate.
 

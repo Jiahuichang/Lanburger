@@ -4,9 +4,9 @@ import type { SaveSystem } from '../save/SaveSystem';
 import type { UiRoot } from '../ui/UiRoot';
 import { QUESTS } from '../content/quests';
 import { ITEMS, TOPPING_INFO } from '../content/items';
-import { TOPICS } from '../content/learning';
+import { TOPIC_IDS, topicFor } from '../content/learning';
 import { evaluate, type QuestChange, type QuestEvent } from '../quest/QuestSystem';
-import { addXp, topicStars, XP } from './Progression';
+import { addXp, topicStars, unitComplete, XP } from './Progression';
 import { lanternsOn, placeName, topicName } from '../content/places';
 import { START_MAP } from '../save/schema';
 import { t } from '../i18n';
@@ -64,11 +64,22 @@ export class ProgressDirector {
     this.save.flush();
   }
 
-  /** Stars per topic for the current language; the first star of a topic is worth XP (§4, §6). */
+  /**
+   * Stars per topic for the current language (mastery); the first star of a topic is worth XP (§4, §6).
+   * Also marks finished curriculum units ("unit:<id>": lessons and practice chat done).
+   */
   checkTopics(): void {
     const d = this.save.data;
     const lang = d.profile.targetLanguage;
-    for (const topic of Object.values(TOPICS)) {
+    for (const id of TOPIC_IDS) {
+      const topic = topicFor(id, lang);
+      if (!topic) continue;
+      for (const unit of topic.units ?? []) {
+        if (d.flags[`unit:${unit.id}`] || !unitComplete(unit, d)) continue;
+        this.save.update((s) => void (s.flags[`unit:${unit.id}`] = true));
+        this.ui.celebrate({ title: t('unit.done'), body: t('learn.unitLabel', { n: unit.number, title: unit.title }), kind: 'quest' });
+        this.gainXp(XP.questStep);
+      }
       const stars = topicStars(topic, d, lang);
       const before = d.topicMastery[topic.id] ?? 0;
       if (stars <= before) continue;

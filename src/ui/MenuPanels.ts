@@ -2,8 +2,10 @@ import type { Services } from '../core/Services';
 import { QUESTS } from '../content/quests';
 import { ITEMS, TOPPING_INFO } from '../content/items';
 import { lanternsOn, topicName } from '../content/places';
-import { TOPICS, packFor } from '../content/learning';
+import { packFor, topicFor } from '../content/learning';
+import { lessonsDone } from '../progress/Progression';
 import { learned } from '../learning/Srs';
+import { formText } from '../learning/content';
 import { stepProgress } from '../quest/QuestSystem';
 import { START_MAP } from '../save/schema';
 import { LANGUAGE_NAMES, t, type StringKey } from '../i18n';
@@ -162,21 +164,33 @@ export class CollectionPanel extends SheetPanel {
     for (const l of lanternsOn(START_MAP)) {
       const lit = d.lanterns.includes(l.topic);
       const stars = d.topicMastery[l.topic] ?? 0;
-      const open = !!TOPICS[l.topic];
-      html += `<li class="${lit ? 'is-lit' : ''}"><span class="lantern-icon">${icons.lantern}</span><span class="lantern-name">${esc(topicName(l.topic))}</span><span class="stars" aria-label="${stars} of 3 stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</span>${open ? '' : `<span class="soon">${esc(t('collection.soon'))}</span>`}</li>`;
+      const topic = topicFor(l.topic, lang);
+      let sub = '';
+      if (topic) {
+        const p = lessonsDone(topic, d);
+        sub = t('collection.lessons', { n: p.done, total: p.total });
+        for (const u of topic.units ?? []) sub += ` · ${t('learn.unitLabel', { n: u.number, title: u.title })}${d.flags[`unit:${u.id}`] ? ' ✓' : ''}`;
+      }
+      html += `<li class="${lit ? 'is-lit' : ''}"><span class="lantern-icon">${icons.lantern}</span><span class="lantern-name">${esc(topicName(l.topic))}${sub ? `<small class="lantern-sub">${esc(sub)}</small>` : ''}</span><span class="stars" title="${esc(t('collection.mastery'))}" aria-label="${esc(t('collection.mastery'))}: ${stars} of 3">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</span>${topic ? '' : `<span class="soon">${esc(t('collection.soon'))}</span>`}</li>`;
     }
-    html += '</ul>';
+    html += `</ul><p class="sheet-note">${esc(t('collection.legend'))}</p>`;
     html += `<h3 class="sheet-h">${esc(t('collection.phrases', { lang: LANGUAGE_NAMES[lang] }))}</h3>`;
     const known = learned(d.vocabulary, lang);
     if (!known.length) html += `<p class="sheet-empty">${esc(t('collection.noPhrases'))}</p>`;
     else {
       html += '<ul class="phrase-list">';
-      for (const topic of Object.values(TOPICS)) {
-        const pack = packFor(topic.id, lang);
+      for (const l of lanternsOn(START_MAP)) {
+        const topic = topicFor(l.topic, lang);
+        const pack = packFor(l.topic, lang);
+        if (!topic || !pack) continue;
         for (const item of topic.items) {
-          if (!known.includes(item.id) || !pack?.forms[item.id]) continue;
+          const f = pack.forms[item.id];
+          if (!known.includes(item.id) || !f) continue;
           const box = d.vocabulary[`${lang}:${item.id}`]?.box ?? 0;
-          html += `<li><span class="target" lang="${lang}">${esc(pack.forms[item.id].text)}</span><span class="phrase-meaning" lang="${d.profile.supportLanguage}">${esc(item.meaning[d.profile.supportLanguage])}</span><span class="phrase-box" title="Box ${box}">${'●'.repeat(box)}${'○'.repeat(5 - box)}</span></li>`;
+          const name = d.profile.name || 'Lanburger';
+          const text = formText(f, d.profile.grammaticalGender, name);
+          const tag = f.level && f.level !== 'A1' ? `<small class="level-tag">${esc(t('lesson.beyondLevel', { level: 'A1' }))}</small>` : '';
+          html += `<li><span class="target" lang="${lang}">${esc(text)}${tag}</span><span class="phrase-meaning" lang="${d.profile.supportLanguage}">${esc(item.meaning[d.profile.supportLanguage].replace(/\{name\}/g, name))}</span><span class="phrase-box" title="Box ${box}">${'●'.repeat(box)}${'○'.repeat(5 - box)}</span></li>`;
         }
       }
       html += '</ul>';

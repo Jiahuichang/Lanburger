@@ -75,6 +75,7 @@ export function migrate(raw: unknown): SaveData {
   if (!raw || typeof raw !== 'object') return base;
   let r = raw as Record<string, any>;
   if ((r.version ?? 1) < 2) r = migrateV1toV2(r);
+  if (r.version < 3) r = migrateV2toV3(r);
 
   const merged: SaveData = {
     ...base,
@@ -98,6 +99,7 @@ export function migrate(raw: unknown): SaveData {
   const p = merged.profile;
   if (!(TARGET_LANGUAGES as readonly unknown[]).includes(p.targetLanguage)) p.targetLanguage = base.profile.targetLanguage;
   if (!(SUPPORT_LANGUAGES as readonly unknown[]).includes(p.supportLanguage)) p.supportLanguage = base.profile.supportLanguage;
+  if (p.grammaticalGender !== 'm' && p.grammaticalGender !== 'f') p.grammaticalGender = null;
   if (!(FACINGS as readonly unknown[]).includes(merged.location.facing)) merged.location.facing = 'down';
   if (!Number.isFinite(merged.location.x) || !Number.isFinite(merged.location.y)) {
     merged.location = { ...base.location, mapId: merged.location.mapId || base.location.mapId };
@@ -129,6 +131,21 @@ function migrateV1toV2(v1: Record<string, any>): Record<string, any> {
     vocabulary: v1.vocabulary,
     settings: v1.settings,
     flags: target ? {} : { needsLanguagePick: true },
+  };
+}
+
+/**
+ * v2 → v3 (R6B): the profile gains `grammaticalGender` (null: the next lesson that needs it asks) and the
+ * settings gain `listening`. Spanish Greetings became syllabus units 1–2 with six lessons: lesson flags
+ * keep their meaning by position (greetings-1…3 = unit 1), so story progress is kept, and finished
+ * lessons can be retaken from Maggie's menu.
+ */
+function migrateV2toV3(v2: Record<string, any>): Record<string, any> {
+  return {
+    ...v2,
+    version: 3,
+    profile: { ...(v2.profile ?? {}), grammaticalGender: null },
+    settings: { ...(v2.settings ?? {}), listening: true },
   };
 }
 

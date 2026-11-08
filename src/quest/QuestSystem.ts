@@ -48,6 +48,7 @@ function unlocked(q: QuestDefinition, d: SaveData): boolean {
   const r = q.requires;
   if (!r) return true;
   if (r.level && d.stats.level < r.level) return false;
+  if (r.languages && !r.languages.includes(d.profile.targetLanguage)) return false;
   return (r.quests ?? []).every((id) => d.quests[id]?.status === 'complete');
 }
 

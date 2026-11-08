@@ -1,8 +1,9 @@
 # Spanish Curriculum — Lanburger（R6A 草案）
 
-> **狀態：草案（2026-11-06），尚未定案。**
-> - §6 的教學流程要等收到 Airlearn 課程目錄和教學畫面後才定案。
+> **狀態：R6A 完成；R6B 已實作，等待驗收（2026-11-08）。**
+> - 2026-11-08 使用者決定不等 Airlearn 參考，直接開始 R6B。§6 的教學流程以草案為準實作；Airlearn 參考之後到了再微調。
 > - §7 的 7 個關鍵決定已全部回覆（2026-11-06）。其餘標示 ⏳ 的細項仍未決定。
+> - R6B 的實作內容見 §8.1。
 > - 所有西文例句和題目都是原創。PCIC 只用來界定程度範圍，不照抄它的例句當教材。
 
 圖例：
@@ -201,7 +202,7 @@ PCIC 編號的寫法：
 
 **單元 10 的位置**：原本對應 Town Square 的鎮民（Remy、Ash、Noah、Theo）。因為它需要先學單元 9 的現在式規則變化，所以移到 A1.2。Hello Town 的鎮民在 A1.1 只做單元 3、5 的閒聊。
 
-## 6. 教學流程與複習（草案，等 Airlearn 參考後定案）
+## 6. 教學流程與複習（R6B 已依此實作；Airlearn 參考到了再微調）
 
 ### 6.1 每課從「引導」到「獨立作答」
 
@@ -210,11 +211,11 @@ PCIC 編號的寫法：
 | 1 看與聽 | 情境、短規則、範例卡（可播放語音） | 範例卡 | ✅ 已有 |
 | 2 辨認 | 看西文選意思 | choose-meaning | ✅ |
 | 3 反向辨認 | 看意思選西文 | choose-target | ✅ |
-| 4 聽辨 | 聽語音選答案 | listen-choose | ❌ 要新增 |
-| 5 組句 | 詞塊排序、填空 | order-words、fill-blank | ❌ 要新增 |
-| 6 產出 | 輸入短詞或短句，容忍大小寫和重音的小錯 | type-answer | ❌ 要新增（✅ 已決定要做） |
-| 7 情境應用 | NPC 對話，可以有多個合理答案 | dialogue-reply（多正解） | 🟡 有，但只接受單一答案 |
-| 8 之後複習 | 間隔複習，題型會隨熟練度升級 | 混合 | 🟡 目前複習只出題型 2 和 3 |
+| 4 聽辨 | 聽語音選答案 | listen-choose | ✅ R6B（沒有語音或關掉聽力時改成看字） |
+| 5 組句 | 詞塊排序、填空 | order-words、fill-blank | ✅ R6B |
+| 6 產出 | 輸入短詞或短句，容忍大小寫和重音的小錯 | type-answer | ✅ R6B |
+| 7 情境應用 | NPC 對話，可以有多個合理答案 | dialogue-reply（多正解） | ✅ R6B |
+| 8 之後複習 | 間隔複習，題型會隨熟練度升級 | 混合 | ✅ R6B |
 
 ### 6.2 複習安排
 
@@ -340,6 +341,25 @@ UI 會分別顯示「已完成」和「熟練度」。燈籠代表故事進度�
 - 故事完成和學習熟練分開記錄。
 
 其他語言保留現有功能，不同步大量新增教材。選單維持英文，解說沿用玩家選的語言。
+
+### 8.1 R6B 實作結果（2026-11-08）
+
+| 項目 | 做法 | 狀態 |
+| ---- | ---- | ---- |
+| 單元 1 Saludos | 第 1–3 課：Hola／Adiós／Hasta luego／Hasta mañana／Gracias；Buenos días／Buenas tardes／Buenas noches；¿Qué tal?／¿Cómo estás?／Bien, gracias.／¿Y tú? | ✅；👩‍🏫 待校對 |
+| 單元 2 Presentarse | 第 4–6 課：¿Cómo te llamas?／Me llamo…／Soy…；Mucho gusto／Encantado・a／Igualmente；señor／señora／¿Cómo se llama usted?／¿Cómo está usted?／¿Y usted? | ✅；👩‍🏫 待校對 |
+| 單元 0 發音 | 拆成每課開頭的發音小提示：h 不發音、ñ、母音、seseo、ll = y、重音位置 | ✅ |
+| 學習目標和短規則 | 每課第一張卡顯示 Goal 和 How it works；例句卡附對比說明 | ✅ |
+| 超出 A1 的句子 | ¿Cómo estás?、Mucho gusto、¿Cómo está usted? 標 `level: 'A2'`，顯示「Common phrase · beyond A1」 | ✅ |
+| 多正解 | 情境題可以有多個正確答案，答對後列出其他也對的說法；輸入題接受 `alts` | ✅ |
+| 針對錯誤的說明 | 時段用錯、tú／usted 用錯、問候和道別搞混，以及填空題每個選項的說明 | ✅ |
+| 語法性別 | 第 5 課 encantado 之前由 Maggie 詢問；Settings 可改；選到另一個性別的形式暫定算對並提示（⏳ 請老師確認） | ✅ |
+| NPC 情境應用 | Remy（tú，單元 1，主線任務）；Mayor Bun（usted，單元 2，西文限定支線任務 Proper Introductions） | ✅ |
+| 複習升級 | 箱 0–1 辨認、箱 2–3 聽辨或排序、箱 4–5 輸入 | ✅；🧪 真實多天間隔未驗證 |
+| 完成和熟練分開 | `unit:*` 旗標代表單元完成；星星只代表熟練度；Collection 分開顯示 | ✅ |
+| 語音 | es-MX → es-US → es-419 → 其他非 es-ES 語音；Settings 可關閉聽力題 | ✅；🧪 實機未聽 |
+
+**驗收前還需要**：教師校對單元 1、2 和繁中解說（之後把 `reviewed` 改成 `true`），以及實機手機測試（輸入題和螢幕鍵盤、語音）。
 
 ## 9. 來源
 

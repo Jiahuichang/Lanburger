@@ -1,6 +1,6 @@
 # Implementation Plan — Lanburger 重新設計
 
-> **狀態：已核准（2026-11-05）。R1 已完成。R2 美術垂直切片完成並通過審核，R3 NPC 與對話、R4 學習引擎、R5 任務與成長完成，Hello Town 垂直切片完成（見 `docs/screenshots/r5/README.md`）；下一階段：R6A 西班牙文課程規劃（2026-11-06 調整：先建立西文課綱，再擴充村莊）。** §7 的 8 項決定都採用建議方案。
+> **狀態：已核准（2026-11-05）。R1 已完成。R2 美術垂直切片完成並通過審核，R3 NPC 與對話、R4 學習引擎、R5 任務與成長完成，Hello Town 垂直切片完成（見 `docs/screenshots/r5/README.md`）；R6A 西班牙文課程規劃完成；R6B 第一個完整西文單元已實作，等待驗收（2026-11-08）。** §7 的 8 項決定都採用建議方案。
 > 盤點基準：commit `8465ef7`（Phase 1：可玩的 Mossbrook 橫向捲軸原型），`src/` 共約 4,400 行 TypeScript。
 
 ## 1. 現況盤點（Phase 0 稽核）
@@ -136,8 +136,8 @@ src/
 | **R3 NPC 與對話** ✅ | NPC 系統（閒晃、面向玩家、頭上圖示）、對話系統（頭像、6 表情、打字效果、選項）、建築進出（門 → 室內）、Language Academy 室內 | 可以跟 NPC 聊天、走進 Academy |
 | **R4 學習引擎** ✅ | 學習片段 7 步驟、題型、回饋和重試、Leitner、內容包載入、Greetings 主題（5 種語言）、體力和 Practice Corner | 在 Academy 完成第一堂課 |
 | **R5 任務與成長** ✅ | 任務系統和追蹤面板、XP、等級、精通度、Word Lanterns、漢堡成長（Lettuce）、小地圖 | **垂直切片完成**（見 §6） |
-| **R6A 西班牙文課程規劃**（進行中） | 盤點 Greetings 西文現況；參考 CEFR 和 PCIC，排出零基礎到 A1 的課綱草案；對應地點和 NPC；列出待決問題（見 `SPANISH_CURRICULUM.md`）。只寫文件，不加內容 | 課綱草案，以及使用者的決定 |
-| R6B 第一個完整西文單元 | 把 Greetings 重做成完整單元：學習目標、從引導到獨立作答的題型、多正解、針對錯誤的說明、NPC 情境、複習題型升級、故事完成和熟練度分開記錄 | 第一單元驗收 |
+| **R6A 西班牙文課程規劃** ✅ | 盤點 Greetings 西文現況；參考 CEFR 和 PCIC，排出零基礎到 A1 的課綱草案；對應地點和 NPC；列出待決問題（見 `SPANISH_CURRICULUM.md`）。只寫文件，不加內容 | 課綱草案，以及使用者的決定 |
+| **R6B 第一個完整西文單元**（已實作，待驗收：教師校對、實機） | 把 Greetings 重做成完整單元：學習目標、從引導到獨立作答的題型、多正解、針對錯誤的說明、NPC 情境、複習題型升級、故事完成和熟練度分開記錄 | 第一單元驗收 |
 | R6C+ | 依課綱逐一擴充其他單元，並加入對應的室內、老師、任務；朋友 NPC、支線 | Hello Town 內容完整 |
 | R7 | 小遊戲框架加 Language Cooking（Burger Rush） | 第一個小遊戲 |
 | R8 | Vocabulary Snake（Garden Snake） | 第二個小遊戲 |
